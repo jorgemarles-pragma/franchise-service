@@ -22,12 +22,10 @@
 							"raw": "{\n    \"name\": \"McDonalds\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/franchises",
-							"protocol": "http",
+							"raw": "{{baseUrl}}/api/franchises",
 							"host": [
-								"localhost"
+								"{{baseUrl}}"
 							],
-							"port": "8080",
 							"path": [
 								"api",
 								"franchises"
@@ -37,6 +35,13 @@
 					"response": []
 				}
 			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
 		}
 	]
 }
