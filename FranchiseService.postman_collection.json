@@ -1,0 +1,47 @@
+{
+	"info": {
+		"name": "Franchise Service (Reto Nequi)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Franquicias",
+			"item": [
+				{
+					"name": "Crear Franquicia",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"McDonalds\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/franchises",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"franchises"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
