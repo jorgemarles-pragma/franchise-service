@@ -32,17 +32,25 @@ The staging environment is provisioned and publicly accessible via the Applicati
 
 ## 🚀 Functional Endpoints Matrix
 
-| # | HTTP Method | Endpoint Path | Description | Request Body | Success Status |
-|---|---|---|---|---|:---:|
-| 1 | `POST` | `/api/franchises` | Create a new franchise | `FranchiseRequest` | `201 Created` |
-| 2 | `PATCH` | `/api/franchises/{franchiseId}/name` | Update franchise name | `UpdateFranchiseNameRequest` | `200 OK` |
-| 3 | `POST` | `/api/franchises/{franchiseId}/branches` | Add branch to franchise | `BranchRequest` | `201 Created` |
-| 4 | `PATCH` | `/api/branches/{branchId}/name` | Update branch name | `UpdateBranchNameRequest` | `200 OK` |
-| 5 | `POST` | `/api/branches/{branchId}/products` | Add product to branch | `ProductRequest` | `201 Created` |
-| 6 | `PATCH` | `/api/products/{productId}/stock` | Update product stock | `UpdateProductStockRequest` | `200 OK` |
-| 7 | `PATCH` | `/api/products/{productId}/name` | Update product name | `UpdateProductNameRequest` | `200 OK` |
-| 8 | `DELETE` | `/api/branches/{branchId}/products/{productId}` | Delete product from branch | N/A | `204 No Content` |
-| 9 | `GET` | `/api/franchises/{franchiseId}/max-stock-products` | Get highest stock product per branch | N/A | `200 OK` |
+| # | HTTP Method | Endpoint Path | Description | Request Body | Response Content-Type | Success Status |
+|---|---|---|---|---|---|:---:|
+| 1 | `POST` | `/api/franchises` | Create a new franchise | `FranchiseRequest` | `application/json` | `201 Created` |
+| 2 | `GET` | `/api/franchises` | List all franchises (reactive stream) | N/A | `application/x-ndjson` | `200 OK` |
+| 3 | `GET` | `/api/franchises/{franchiseId}` | Get franchise by ID | N/A | `application/json` | `200 OK` |
+| 4 | `PATCH` | `/api/franchises/{franchiseId}/name` | Update franchise name | `UpdateFranchiseNameRequest` | `application/json` | `200 OK` |
+| 5 | `POST` | `/api/franchises/{franchiseId}/branches` | Add branch to franchise | `BranchRequest` | `application/json` | `201 Created` |
+| 6 | `GET` | `/api/franchises/{franchiseId}/branches` | List branches for franchise (stream) | N/A | `application/x-ndjson` | `200 OK` |
+| 7 | `GET` | `/api/branches/{branchId}` | Get branch by ID | N/A | `application/json` | `200 OK` |
+| 8 | `PATCH` | `/api/branches/{branchId}/name` | Update branch name | `UpdateBranchNameRequest` | `application/json` | `200 OK` |
+| 9 | `POST` | `/api/branches/{branchId}/products` | Add product to branch | `ProductRequest` | `application/json` | `201 Created` |
+| 10 | `GET` | `/api/branches/{branchId}/products` | List products for branch (stream) | N/A | `application/x-ndjson` | `200 OK` |
+| 11 | `GET` | `/api/products/{productId}` | Get product by ID | N/A | `application/json` | `200 OK` |
+| 12 | `PATCH` | `/api/products/{productId}/stock` | Update product stock | `UpdateProductStockRequest` | `application/json` | `200 OK` |
+| 13 | `PATCH` | `/api/products/{productId}/name` | Update product name | `UpdateProductNameRequest` | `application/json` | `200 OK` |
+| 14 | `DELETE` | `/api/branches/{branchId}/products/{productId}` | Delete product from branch | N/A | N/A | `204 No Content` |
+| 15 | `GET` | `/api/franchises/{franchiseId}/max-stock-products` | Get highest stock product per branch (stream) | N/A | `application/x-ndjson` | `200 OK` |
+
+> ℹ️ **Reactive Streaming Note**: All endpoints returning a reactive `Flux` stream emit items as `application/x-ndjson` (`MediaType.APPLICATION_NDJSON`), enabling low-latency, backpressure-compliant streaming directly to clients without accumulating items in memory. Single-element queries (`Mono`) produce standard `application/json`.
 
 ---
 
