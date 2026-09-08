@@ -57,5 +57,15 @@ public class ProductRepositoryAdapter
                 .flatMapMany(repository::findHighestStockByFranchiseId)
                 .map(productMapper::toModel);
     }
+
+    @Override
+    public Mono<Void> deleteById(ProductModelId id) {
+        return Mono.justOrEmpty(id)
+                .map(ProductModelId::value)
+                .filter(val -> !val.isBlank())
+                .map(Long::valueOf)
+                .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
+                .flatMap(repository::deleteById);
+    }
 }
 

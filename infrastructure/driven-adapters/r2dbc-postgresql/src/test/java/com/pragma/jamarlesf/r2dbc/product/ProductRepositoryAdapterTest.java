@@ -238,5 +238,46 @@ class ProductRepositoryAdapterTest {
 
         verify(repository).findHighestStockByFranchiseId(1L);
     }
+
+    @Test
+    void mustDeleteProductSuccessfullyWhenIdIsValid() {
+        when(repository.deleteById(100L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(adapter.deleteById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("100")))
+                .verifyComplete();
+
+        verify(repository).deleteById(100L);
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdIsNullOnDeleteById() {
+        StepVerifier.create(adapter.deleteById(null))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdIsBlankOnDeleteById() {
+        StepVerifier.create(adapter.deleteById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("  ")))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdIsNonNumericOnDeleteById() {
+        StepVerifier.create(adapter.deleteById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("abc")))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustPropagateErrorWhenDatabaseFailsOnDeleteById() {
+        RuntimeException dbException = new RuntimeException("DB delete failed");
+        when(repository.deleteById(100L)).thenReturn(Mono.error(dbException));
+
+        StepVerifier.create(adapter.deleteById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("100")))
+                .expectErrorMatches(error -> error instanceof RuntimeException
+                        && error.getMessage().equals("DB delete failed"))
+                .verify();
+
+        verify(repository).deleteById(100L);
+    }
 }
 
