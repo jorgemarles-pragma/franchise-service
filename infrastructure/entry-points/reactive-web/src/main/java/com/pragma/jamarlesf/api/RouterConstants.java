@@ -8,6 +8,7 @@ public final class RouterConstants {
     public static final String BRANCH_NAME_PATH = "/api/branches/{branchId}/name";
     public static final String PRODUCTS_PATH = "/api/branches/{branchId}/products";
     public static final String PRODUCT_STOCK_PATH = "/api/products/{productId}/stock";
+    public static final String PRODUCT_NAME_PATH = "/api/products/{productId}/name";
     public static final String FRANCHISE_HIGHEST_STOCK_PRODUCTS_PATH = "/api/franchises/{franchiseId}/max-stock-products";
     
     private RouterConstants() {

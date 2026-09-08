@@ -1,6 +1,7 @@
 package com.pragma.jamarlesf.api;
 
 import com.pragma.jamarlesf.api.dto.request.ProductRequest;
+import com.pragma.jamarlesf.api.dto.request.UpdateProductNameRequest;
 import com.pragma.jamarlesf.api.dto.request.UpdateProductStockRequest;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
@@ -9,6 +10,7 @@ import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.usecase.addproducttobranch.AddProductToBranchUseCase;
 import com.pragma.jamarlesf.usecase.gethigheststockproductsbyfranchise.GetHighestStockProductsByFranchiseUseCase;
 import com.pragma.jamarlesf.usecase.modifyproductstock.ModifyProductStockUseCase;
+import com.pragma.jamarlesf.usecase.updateproductname.UpdateProductNameUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,13 +44,16 @@ class ProductHandlerTest {
     private GetHighestStockProductsByFranchiseUseCase getHighestStockProductsByFranchiseUseCase;
 
     @Mock
+    private UpdateProductNameUseCase updateProductNameUseCase;
+
+    @Mock
     private ServerRequest serverRequest;
 
     private ProductHandler productHandler;
 
     @BeforeEach
     void setUp() {
-        productHandler = new ProductHandler(addProductToBranchUseCase, modifyProductStockUseCase, getHighestStockProductsByFranchiseUseCase);
+        productHandler = new ProductHandler(addProductToBranchUseCase, modifyProductStockUseCase, getHighestStockProductsByFranchiseUseCase, updateProductNameUseCase);
     }
 
 
@@ -181,6 +186,36 @@ class ProductHandlerTest {
 
         verify(serverRequest).pathVariable("franchiseId");
         verify(getHighestStockProductsByFranchiseUseCase).execute(eq(new FranchiseModelId("999")));
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 200 when product name is updated successfully")
+    void shouldReturn200WhenProductNameIsUpdatedSuccessfully() {
+        UpdateProductNameRequest requestDto = new UpdateProductNameRequest("Hamburguesa Doble Carne");
+        ProductModel updatedProduct = ProductModel.builder()
+                .id(new ProductModelId("100"))
+                .name("Hamburguesa Doble Carne")
+                .stock(50)
+                .branchId(new BranchModelId("10"))
+                .build();
+
+        when(serverRequest.pathVariable("productId")).thenReturn("100");
+        when(serverRequest.bodyToMono(UpdateProductNameRequest.class)).thenReturn(Mono.just(requestDto));
+        when(updateProductNameUseCase.execute(eq(new ProductModelId("100")), eq("Hamburguesa Doble Carne")))
+                .thenReturn(Mono.just(updatedProduct));
+
+        Mono<ServerResponse> responseMono = productHandler.updateProductName(serverRequest);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(HttpStatus.OK, response.statusCode());
+                })
+                .verifyComplete();
+
+        verify(serverRequest).pathVariable("productId");
+        verify(serverRequest).bodyToMono(UpdateProductNameRequest.class);
+        verify(updateProductNameUseCase).execute(eq(new ProductModelId("100")), eq("Hamburguesa Doble Carne"));
     }
 }
 
