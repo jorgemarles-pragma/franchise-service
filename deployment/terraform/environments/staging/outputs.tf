@@ -10,7 +10,7 @@ output "api_base_url" {
 
 output "swagger_ui_url" {
   description = "URL for the Swagger UI documentation"
-  value       = "http://${module.alb.alb_dns_name}/webjars/swagger-ui/index.html"
+  value       = "http://${module.alb.alb_dns_name}/webjars/swagger-ui/index.html?url=/v3/api-docs"
 }
 
 output "ecr_repository_url" {

@@ -23,7 +23,7 @@ La infraestructura está provisionada y accesible públicamente a través del Ap
 | Servicio | URL Pública |
 |---|---|
 | **API Base URL** | `http://franchise-service-staging-alb-639543305.us-east-1.elb.amazonaws.com` |
-| **Documentación Swagger UI** | `http://franchise-service-staging-alb-639543305.us-east-1.elb.amazonaws.com/webjars/swagger-ui/index.html` |
+| **Documentación Swagger UI** | `http://franchise-service-staging-alb-639543305.us-east-1.elb.amazonaws.com/webjars/swagger-ui/index.html?url=/v3/api-docs` |
 | **OpenAPI Spec (JSON)** | `http://franchise-service-staging-alb-639543305.us-east-1.elb.amazonaws.com/v3/api-docs` |
 | **Health Check (Actuator)** | `http://franchise-service-staging-alb-639543305.us-east-1.elb.amazonaws.com/actuator/health` |
 
