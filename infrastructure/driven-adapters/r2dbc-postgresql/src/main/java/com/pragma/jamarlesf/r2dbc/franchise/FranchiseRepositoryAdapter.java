@@ -23,10 +23,6 @@ public class FranchiseRepositoryAdapter
         this.resilienceOperators = resilienceOperators;
     }
 
-    public FranchiseRepositoryAdapter(FranchiseReactiveRepository repository, ObjectMapper mapper, FranchiseMapper franchiseMapper) {
-        this(repository, mapper, franchiseMapper, ResilienceOperators.defaultInstance());
-    }
-
     @Override
     protected FranchiseData toData(FranchiseModel model) {
         return franchiseMapper.toData(model);

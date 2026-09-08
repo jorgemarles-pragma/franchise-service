@@ -3,6 +3,7 @@ package com.pragma.jamarlesf.r2dbc.product;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
+import com.pragma.jamarlesf.r2dbc.helper.ResilienceOperators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +37,7 @@ class ProductRepositoryAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new ProductRepositoryAdapter(repository, mapper, productMapper);
+        adapter = new ProductRepositoryAdapter(repository, mapper, productMapper, ResilienceOperators.defaultInstance());
     }
 
     @Test
