@@ -17,4 +17,6 @@ public interface ProductReactiveRepository
            ") p " +
            "WHERE p.rn = 1")
     Flux<ProductData> findHighestStockByFranchiseId(Long franchiseId);
+
+    Flux<ProductData> findAllByBranchId(Long branchId);
 }

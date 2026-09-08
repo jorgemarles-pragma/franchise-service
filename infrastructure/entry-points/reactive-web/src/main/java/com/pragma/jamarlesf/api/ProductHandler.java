@@ -11,6 +11,8 @@ import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.usecase.addproducttobranch.AddProductToBranchUseCase;
 import com.pragma.jamarlesf.usecase.deleteproductfrombranch.DeleteProductFromBranchUseCase;
 import com.pragma.jamarlesf.usecase.gethigheststockproductsbyfranchise.GetHighestStockProductsByFranchiseUseCase;
+import com.pragma.jamarlesf.usecase.getproductbyid.GetProductByIdUseCase;
+import com.pragma.jamarlesf.usecase.getproductsbybranch.GetProductsByBranchUseCase;
 import com.pragma.jamarlesf.usecase.modifyproductstock.ModifyProductStockUseCase;
 import com.pragma.jamarlesf.usecase.updateproductname.UpdateProductNameUseCase;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_BRANCH_ID;
@@ -34,6 +37,38 @@ public class ProductHandler {
     private final GetHighestStockProductsByFranchiseUseCase getHighestStockProductsByFranchiseUseCase;
     private final UpdateProductNameUseCase updateProductNameUseCase;
     private final DeleteProductFromBranchUseCase deleteProductFromBranchUseCase;
+    private final GetProductByIdUseCase getProductByIdUseCase;
+    private final GetProductsByBranchUseCase getProductsByBranchUseCase;
+
+    public Mono<ServerResponse> getProductById(ServerRequest request) {
+        String productId = request.pathVariable(PATH_VAR_PRODUCT_ID);
+        return getProductByIdUseCase.execute(new ProductModelId(productId))
+                .map(product -> ProductResponse.builder()
+                        .id(product.getId() != null ? product.getId().value() : null)
+                        .name(product.getName())
+                        .stock(product.getStock())
+                        .branchId(product.getBranchId() != null ? product.getBranchId().value() : null)
+                        .build())
+                .flatMap(response -> ServerResponse
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(response));
+    }
+
+    public Mono<ServerResponse> getProductsByBranch(ServerRequest request) {
+        String branchId = request.pathVariable(PATH_VAR_BRANCH_ID);
+        Flux<ProductResponse> productFlux = getProductsByBranchUseCase.execute(new BranchModelId(branchId))
+                .map(product -> ProductResponse.builder()
+                        .id(product.getId() != null ? product.getId().value() : null)
+                        .name(product.getName())
+                        .stock(product.getStock())
+                        .branchId(product.getBranchId() != null ? product.getBranchId().value() : null)
+                        .build());
+        return ServerResponse
+                .ok()
+                .contentType(MediaType.APPLICATION_NDJSON)
+                .body(productFlux, ProductResponse.class);
+    }
 
     public Mono<ServerResponse> addProduct(ServerRequest request) {
         String branchId = request.pathVariable(PATH_VAR_BRANCH_ID);
@@ -71,18 +106,17 @@ public class ProductHandler {
 
     public Mono<ServerResponse> getHighestStockProducts(ServerRequest request) {
         String franchiseId = request.pathVariable(PATH_VAR_FRANCHISE_ID);
-        return getHighestStockProductsByFranchiseUseCase.execute(new FranchiseModelId(franchiseId))
+        Flux<ProductResponse> productFlux = getHighestStockProductsByFranchiseUseCase.execute(new FranchiseModelId(franchiseId))
                 .map(product -> ProductResponse.builder()
                         .id(product.getId() != null ? product.getId().value() : null)
                         .name(product.getName())
                         .stock(product.getStock())
                         .branchId(product.getBranchId() != null ? product.getBranchId().value() : null)
-                        .build())
-                .collectList()
-                .flatMap(responses -> ServerResponse
-                        .ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(responses));
+                        .build());
+        return ServerResponse
+                .ok()
+                .contentType(MediaType.APPLICATION_NDJSON)
+                .body(productFlux, ProductResponse.class);
     }
 
     public Mono<ServerResponse> updateProductName(ServerRequest request) {

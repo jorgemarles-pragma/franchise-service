@@ -22,6 +22,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import static com.pragma.jamarlesf.api.RouterConstants.APPLICATION_JSON;
+import static com.pragma.jamarlesf.api.RouterConstants.APPLICATION_NDJSON;
 import static com.pragma.jamarlesf.api.RouterConstants.BRANCH_PRODUCT_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.FRANCHISE_HIGHEST_STOCK_PRODUCTS_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_BRANCH_ID;
@@ -30,6 +31,8 @@ import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_PRODUCT_ID;
 import static com.pragma.jamarlesf.api.RouterConstants.PRODUCTS_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.PRODUCT_NAME_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.PRODUCT_STOCK_PATH;
+import static com.pragma.jamarlesf.api.RouterConstants.ROUTER_BRANCHES_PRODUCTS;
+import static com.pragma.jamarlesf.api.RouterConstants.ROUTER_PRODUCTS_GET_BY_ID;
 import static com.pragma.jamarlesf.api.RouterConstants.TAG_PRODUCTS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.DELETE;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
@@ -153,7 +156,7 @@ public class ProductRouter {
             ),
             @RouterOperation(
                     path = FRANCHISE_HIGHEST_STOCK_PRODUCTS_PATH,
-                    produces = {APPLICATION_JSON},
+                    produces = {APPLICATION_NDJSON},
                     method = RequestMethod.GET,
                     beanClass = ProductHandler.class,
                     beanMethod = "getHighestStockProducts",
@@ -166,9 +169,53 @@ public class ProductRouter {
                                     @Parameter(in = ParameterIn.PATH, name = PATH_VAR_FRANCHISE_ID, description = "Franchise identifier", required = true)
                             },
                             responses = {
-                                    @ApiResponse(responseCode = "200", description = "List of products with highest stock per branch",
+                                    @ApiResponse(responseCode = "200", description = "Stream of products with highest stock per branch",
                                             content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class)))),
                                     @ApiResponse(responseCode = "404", description = "Franchise not found",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = ROUTER_PRODUCTS_GET_BY_ID,
+                    produces = {APPLICATION_JSON},
+                    method = RequestMethod.GET,
+                    beanClass = ProductHandler.class,
+                    beanMethod = "getProductById",
+                    operation = @Operation(
+                            operationId = "getProductById",
+                            summary = "Get product by identifier",
+                            description = "Retrieves an existing product by its unique identifier",
+                            tags = {TAG_PRODUCTS},
+                            parameters = {
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_PRODUCT_ID, description = "Product identifier", required = true)
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "Product retrieved successfully",
+                                            content = @Content(schema = @Schema(implementation = ProductResponse.class))),
+                                    @ApiResponse(responseCode = "404", description = "Product not found",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = ROUTER_BRANCHES_PRODUCTS,
+                    produces = {APPLICATION_NDJSON},
+                    method = RequestMethod.GET,
+                    beanClass = ProductHandler.class,
+                    beanMethod = "getProductsByBranch",
+                    operation = @Operation(
+                            operationId = "getProductsByBranch",
+                            summary = "Get all products belonging to a branch",
+                            description = "Streams all products belonging to the specified branch in NDJSON format",
+                            tags = {TAG_PRODUCTS},
+                            parameters = {
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_BRANCH_ID, description = "Branch identifier", required = true)
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "Stream of products belonging to the branch",
+                                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class)))),
+                                    @ApiResponse(responseCode = "404", description = "Branch not found",
                                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
                             }
                     )
@@ -179,6 +226,8 @@ public class ProductRouter {
                 .andRoute(DELETE(BRANCH_PRODUCT_PATH), handler::deleteProduct)
                 .andRoute(PATCH(PRODUCT_STOCK_PATH), handler::updateStock)
                 .andRoute(PATCH(PRODUCT_NAME_PATH), handler::updateProductName)
-                .andRoute(GET(FRANCHISE_HIGHEST_STOCK_PRODUCTS_PATH), handler::getHighestStockProducts);
+                .andRoute(GET(FRANCHISE_HIGHEST_STOCK_PRODUCTS_PATH), handler::getHighestStockProducts)
+                .andRoute(GET(ROUTER_PRODUCTS_GET_BY_ID), handler::getProductById)
+                .andRoute(GET(ROUTER_BRANCHES_PRODUCTS), handler::getProductsByBranch);
     }
 }
