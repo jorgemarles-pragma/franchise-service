@@ -86,4 +86,84 @@ class ProductRepositoryAdapterTest {
 
         verify(repository).save(any(ProductData.class));
     }
+
+    @Test
+    void mustFindProductByIdSuccessfully() {
+        ProductData foundData = ProductData.builder()
+                .id(100L)
+                .name("Hamburguesa Doble")
+                .stock(50)
+                .branchId(10L)
+                .build();
+
+        when(repository.findById(100L)).thenReturn(Mono.just(foundData));
+
+        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("100")))
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals("100", result.getId().value());
+                    assertEquals("Hamburguesa Doble", result.getName());
+                    assertEquals(50, result.getStock());
+                })
+                .verifyComplete();
+
+        verify(repository).findById(100L);
+    }
+
+    @Test
+    void mustReturnEmptyWhenProductNotFound() {
+        when(repository.findById(999L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("999")))
+                .verifyComplete();
+
+        verify(repository).findById(999L);
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdIsNull() {
+        StepVerifier.create(adapter.findById((com.pragma.jamarlesf.model.productmodel.ProductModelId) null))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdIsBlank() {
+        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("  ")))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdIsNonNumeric() {
+        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("abc")))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustUpdateProductSuccessfully() {
+        ProductModel inputModel = ProductModel.builder()
+                .id(new com.pragma.jamarlesf.model.productmodel.ProductModelId("100"))
+                .name("Hamburguesa Doble")
+                .stock(75)
+                .branchId(new BranchModelId("10"))
+                .build();
+
+        ProductData savedData = ProductData.builder()
+                .id(100L)
+                .name("Hamburguesa Doble")
+                .stock(75)
+                .branchId(10L)
+                .build();
+
+        when(repository.save(any(ProductData.class))).thenReturn(Mono.just(savedData));
+
+        StepVerifier.create(adapter.update(inputModel))
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals("100", result.getId().value());
+                    assertEquals(75, result.getStock());
+                })
+                .verifyComplete();
+
+        verify(repository).save(any(ProductData.class));
+    }
 }

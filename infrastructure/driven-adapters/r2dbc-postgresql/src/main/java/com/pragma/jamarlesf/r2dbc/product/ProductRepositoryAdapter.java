@@ -1,6 +1,7 @@
 package com.pragma.jamarlesf.r2dbc.product;
 
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
+import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.model.productmodel.gateways.ProductModelRepository;
 import com.pragma.jamarlesf.r2dbc.helper.ReactiveAdapterOperations;
 import org.reactivecommons.utils.ObjectMapper;
@@ -26,6 +27,21 @@ public class ProductRepositoryAdapter
 
     @Override
     public Mono<ProductModel> create(ProductModel product) {
+        return this.save(product);
+    }
+
+    @Override
+    public Mono<ProductModel> findById(ProductModelId id) {
+        return Mono.justOrEmpty(id)
+                .map(ProductModelId::value)
+                .filter(val -> val != null && !val.isBlank())
+                .map(Long::valueOf)
+                .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
+                .flatMap(this::findById);
+    }
+
+    @Override
+    public Mono<ProductModel> update(ProductModel product) {
         return this.save(product);
     }
 }

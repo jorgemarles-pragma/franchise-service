@@ -1,10 +1,12 @@
 package com.pragma.jamarlesf.api;
 
 import com.pragma.jamarlesf.api.dto.request.ProductRequest;
+import com.pragma.jamarlesf.api.dto.request.UpdateProductStockRequest;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.usecase.addproducttobranch.AddProductToBranchUseCase;
+import com.pragma.jamarlesf.usecase.modifyproductstock.ModifyProductStockUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,13 +33,16 @@ class ProductHandlerTest {
     private AddProductToBranchUseCase addProductToBranchUseCase;
 
     @Mock
+    private ModifyProductStockUseCase modifyProductStockUseCase;
+
+    @Mock
     private ServerRequest serverRequest;
 
     private ProductHandler productHandler;
 
     @BeforeEach
     void setUp() {
-        productHandler = new ProductHandler(addProductToBranchUseCase);
+        productHandler = new ProductHandler(addProductToBranchUseCase, modifyProductStockUseCase);
     }
 
     @Test
@@ -68,5 +73,35 @@ class ProductHandlerTest {
         verify(serverRequest).pathVariable("branchId");
         verify(serverRequest).bodyToMono(ProductRequest.class);
         verify(addProductToBranchUseCase).execute(eq(new BranchModelId("10")), any(ProductModel.class));
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 200 when product stock is updated successfully")
+    void shouldReturn200WhenProductStockIsUpdatedSuccessfully() {
+        UpdateProductStockRequest requestDto = new UpdateProductStockRequest(75);
+        ProductModel updatedProduct = ProductModel.builder()
+                .id(new ProductModelId("100"))
+                .name("Hamburguesa Doble")
+                .stock(75)
+                .branchId(new BranchModelId("10"))
+                .build();
+
+        when(serverRequest.pathVariable("productId")).thenReturn("100");
+        when(serverRequest.bodyToMono(UpdateProductStockRequest.class)).thenReturn(Mono.just(requestDto));
+        when(modifyProductStockUseCase.execute(eq(new ProductModelId("100")), eq(75)))
+                .thenReturn(Mono.just(updatedProduct));
+
+        Mono<ServerResponse> responseMono = productHandler.updateStock(serverRequest);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(HttpStatus.OK, response.statusCode());
+                })
+                .verifyComplete();
+
+        verify(serverRequest).pathVariable("productId");
+        verify(serverRequest).bodyToMono(UpdateProductStockRequest.class);
+        verify(modifyProductStockUseCase).execute(eq(new ProductModelId("100")), eq(75));
     }
 }

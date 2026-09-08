@@ -101,6 +101,35 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Modificar Stock de Producto",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"stock\": 75\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products/1/stock",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"1",
+								"stock"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
