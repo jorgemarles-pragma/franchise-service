@@ -2,6 +2,7 @@ package com.pragma.jamarlesf.r2dbc.franchise;
 
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
+import com.pragma.jamarlesf.r2dbc.helper.ResilienceOperators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +34,7 @@ class FranchiseRepositoryAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new FranchiseRepositoryAdapter(repository, mapper, franchiseMapper);
+        adapter = new FranchiseRepositoryAdapter(repository, mapper, franchiseMapper, ResilienceOperators.defaultInstance());
     }
 
     @Test

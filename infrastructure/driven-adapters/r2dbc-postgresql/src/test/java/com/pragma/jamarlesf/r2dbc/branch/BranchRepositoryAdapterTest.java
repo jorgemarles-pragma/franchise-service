@@ -3,6 +3,7 @@ package com.pragma.jamarlesf.r2dbc.branch;
 import com.pragma.jamarlesf.model.branchmodel.BranchModel;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
+import com.pragma.jamarlesf.r2dbc.helper.ResilienceOperators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +35,7 @@ class BranchRepositoryAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new BranchRepositoryAdapter(repository, mapper, branchMapper);
+        adapter = new BranchRepositoryAdapter(repository, mapper, branchMapper, ResilienceOperators.defaultInstance());
     }
 
     @Test

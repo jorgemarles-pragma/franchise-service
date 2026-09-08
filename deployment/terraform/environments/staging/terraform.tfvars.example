@@ -10,7 +10,7 @@ availability_zones = ["us-east-1a", "us-east-1b"]
 # Database settings
 db_name           = "franchise_staging"
 db_user           = "franchise_app_user"
-db_password       = "REPLACE_WITH_STRONG_PASSWORD_MIN_16_CHARS"
+# db password se lee desde variable de entorno
 db_instance_class = "db.t4g.micro"
 
 # Application settings

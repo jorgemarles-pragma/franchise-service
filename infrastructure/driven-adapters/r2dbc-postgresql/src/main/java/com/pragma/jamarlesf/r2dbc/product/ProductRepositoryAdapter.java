@@ -25,10 +25,6 @@ public class ProductRepositoryAdapter
         this.resilienceOperators = resilienceOperators;
     }
 
-    public ProductRepositoryAdapter(ProductReactiveRepository repository, ObjectMapper mapper, ProductMapper productMapper) {
-        this(repository, mapper, productMapper, ResilienceOperators.defaultInstance());
-    }
-
     @Override
     protected ProductData toData(ProductModel model) {
         return productMapper.toData(model);

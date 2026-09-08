@@ -23,10 +23,6 @@ public class BranchRepositoryAdapter
         this.resilienceOperators = resilienceOperators;
     }
 
-    public BranchRepositoryAdapter(BranchReactiveRepository repository, ObjectMapper mapper, BranchMapper branchMapper) {
-        this(repository, mapper, branchMapper, ResilienceOperators.defaultInstance());
-    }
-
     @Override
     protected BranchData toData(BranchModel model) {
         return branchMapper.toData(model);
