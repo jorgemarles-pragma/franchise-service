@@ -1,5 +1,6 @@
 package com.pragma.jamarlesf.r2dbc.product;
 
+import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
@@ -50,6 +51,19 @@ public class ProductRepositoryAdapter
     @Override
     public Mono<ProductModel> update(ProductModel product) {
         return resilienceOperators.apply(this.save(product));
+    }
+
+    @Override
+    public Flux<ProductModel> findAllByBranchId(BranchModelId branchId) {
+        return resilienceOperators.apply(
+                Mono.justOrEmpty(branchId)
+                        .map(BranchModelId::value)
+                        .filter(val -> !val.isBlank())
+                        .map(Long::valueOf)
+                        .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
+                        .flatMapMany(repository::findAllByBranchId)
+                        .map(productMapper::toModel)
+        );
     }
 
     @Override

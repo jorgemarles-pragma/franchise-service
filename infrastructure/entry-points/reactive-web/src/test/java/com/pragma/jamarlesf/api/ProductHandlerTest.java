@@ -12,6 +12,8 @@ import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.usecase.addproducttobranch.AddProductToBranchUseCase;
 import com.pragma.jamarlesf.usecase.deleteproductfrombranch.DeleteProductFromBranchUseCase;
 import com.pragma.jamarlesf.usecase.gethigheststockproductsbyfranchise.GetHighestStockProductsByFranchiseUseCase;
+import com.pragma.jamarlesf.usecase.getproductbyid.GetProductByIdUseCase;
+import com.pragma.jamarlesf.usecase.getproductsbybranch.GetProductsByBranchUseCase;
 import com.pragma.jamarlesf.usecase.modifyproductstock.ModifyProductStockUseCase;
 import com.pragma.jamarlesf.usecase.updateproductname.UpdateProductNameUseCase;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
@@ -56,13 +59,27 @@ class ProductHandlerTest {
     private DeleteProductFromBranchUseCase deleteProductFromBranchUseCase;
 
     @Mock
+    private GetProductByIdUseCase getProductByIdUseCase;
+
+    @Mock
+    private GetProductsByBranchUseCase getProductsByBranchUseCase;
+
+    @Mock
     private ServerRequest serverRequest;
 
     private ProductHandler productHandler;
 
     @BeforeEach
     void setUp() {
-        productHandler = new ProductHandler(addProductToBranchUseCase, modifyProductStockUseCase, getHighestStockProductsByFranchiseUseCase, updateProductNameUseCase, deleteProductFromBranchUseCase);
+        productHandler = new ProductHandler(
+                addProductToBranchUseCase,
+                modifyProductStockUseCase,
+                getHighestStockProductsByFranchiseUseCase,
+                updateProductNameUseCase,
+                deleteProductFromBranchUseCase,
+                getProductByIdUseCase,
+                getProductsByBranchUseCase
+        );
     }
 
     @Test
@@ -152,6 +169,7 @@ class ProductHandlerTest {
                 .assertNext(response -> {
                     assertNotNull(response);
                     assertEquals(HttpStatus.OK, response.statusCode());
+                    assertEquals(MediaType.APPLICATION_NDJSON, response.headers().getContentType());
                 })
                 .verifyComplete();
 
@@ -160,8 +178,8 @@ class ProductHandlerTest {
     }
 
     @Test
-    @DisplayName("Should return HTTP 200 and empty list when no products found for franchise")
-    void shouldReturn200AndEmptyListWhenNoProductsFoundForFranchise() {
+    @DisplayName("Should return HTTP 200 and stream when no products found for franchise")
+    void shouldReturn200AndStreamWhenNoProductsFoundForFranchise() {
         when(serverRequest.pathVariable(PATH_VAR_FRANCHISE_ID)).thenReturn(ApiTestConstants.ID_ONE);
         when(getHighestStockProductsByFranchiseUseCase.execute(new FranchiseModelId(ApiTestConstants.ID_ONE)))
                 .thenReturn(Flux.empty());
@@ -172,6 +190,7 @@ class ProductHandlerTest {
                 .assertNext(response -> {
                     assertNotNull(response);
                     assertEquals(HttpStatus.OK, response.statusCode());
+                    assertEquals(MediaType.APPLICATION_NDJSON, response.headers().getContentType());
                 })
                 .verifyComplete();
 
@@ -180,7 +199,7 @@ class ProductHandlerTest {
     }
 
     @Test
-    @DisplayName("Should propagate error when use case throws exception")
+    @DisplayName("Should return ServerResponse wrapping Flux that emits error when use case throws exception")
     void shouldPropagateErrorWhenUseCaseThrowsException() {
         when(serverRequest.pathVariable(PATH_VAR_FRANCHISE_ID)).thenReturn(ApiTestConstants.ID_NON_EXISTENT);
         when(getHighestStockProductsByFranchiseUseCase.execute(new FranchiseModelId(ApiTestConstants.ID_NON_EXISTENT)))
@@ -189,8 +208,12 @@ class ProductHandlerTest {
         Mono<ServerResponse> responseMono = productHandler.getHighestStockProducts(serverRequest);
 
         StepVerifier.create(responseMono)
-                .expectError(FranchiseNotFoundException.class)
-                .verify();
+                .assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(HttpStatus.OK, response.statusCode());
+                    assertEquals(MediaType.APPLICATION_NDJSON, response.headers().getContentType());
+                })
+                .verifyComplete();
 
         verify(serverRequest).pathVariable(PATH_VAR_FRANCHISE_ID);
         verify(getHighestStockProductsByFranchiseUseCase).execute(new FranchiseModelId(ApiTestConstants.ID_NON_EXISTENT));
@@ -266,5 +289,68 @@ class ProductHandlerTest {
         verify(serverRequest).pathVariable(PATH_VAR_BRANCH_ID);
         verify(serverRequest).pathVariable(PATH_VAR_PRODUCT_ID);
         verify(deleteProductFromBranchUseCase).execute(new BranchModelId(ApiTestConstants.ID_TEN), new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED));
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 200 when getting product by id successfully")
+    void shouldReturn200WhenGettingProductByIdSuccessfully() {
+        ProductModel product = ProductModel.builder()
+                .id(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED))
+                .name(ApiTestConstants.PRODUCT_NAME_DEFAULT)
+                .stock(ApiTestConstants.STOCK_FIFTY)
+                .branchId(new BranchModelId(ApiTestConstants.ID_TEN))
+                .build();
+
+        when(serverRequest.pathVariable(PATH_VAR_PRODUCT_ID)).thenReturn(ApiTestConstants.ID_ONE_HUNDRED);
+        when(getProductByIdUseCase.execute(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED)))
+                .thenReturn(Mono.just(product));
+
+        Mono<ServerResponse> responseMono = productHandler.getProductById(serverRequest);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(HttpStatus.OK, response.statusCode());
+                    assertEquals(MediaType.APPLICATION_JSON, response.headers().getContentType());
+                })
+                .verifyComplete();
+
+        verify(serverRequest).pathVariable(PATH_VAR_PRODUCT_ID);
+        verify(getProductByIdUseCase).execute(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED));
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 200 and stream NDJSON when getting products by branch successfully")
+    void shouldReturn200AndStreamNDJSONWhenGettingProductsByBranchSuccessfully() {
+        ProductModel product1 = ProductModel.builder()
+                .id(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED))
+                .name(ApiTestConstants.PRODUCT_NAME_DEFAULT)
+                .stock(ApiTestConstants.STOCK_FIFTY)
+                .branchId(new BranchModelId(ApiTestConstants.ID_TEN))
+                .build();
+
+        ProductModel product2 = ProductModel.builder()
+                .id(new ProductModelId(ApiTestConstants.ID_TWO))
+                .name(ApiTestConstants.PRODUCT_NAME_FRIES)
+                .stock(ApiTestConstants.STOCK_EIGHTY)
+                .branchId(new BranchModelId(ApiTestConstants.ID_TEN))
+                .build();
+
+        when(serverRequest.pathVariable(PATH_VAR_BRANCH_ID)).thenReturn(ApiTestConstants.ID_TEN);
+        when(getProductsByBranchUseCase.execute(new BranchModelId(ApiTestConstants.ID_TEN)))
+                .thenReturn(Flux.just(product1, product2));
+
+        Mono<ServerResponse> responseMono = productHandler.getProductsByBranch(serverRequest);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(HttpStatus.OK, response.statusCode());
+                    assertEquals(MediaType.APPLICATION_NDJSON, response.headers().getContentType());
+                })
+                .verifyComplete();
+
+        verify(serverRequest).pathVariable(PATH_VAR_BRANCH_ID);
+        verify(getProductsByBranchUseCase).execute(new BranchModelId(ApiTestConstants.ID_TEN));
     }
 }

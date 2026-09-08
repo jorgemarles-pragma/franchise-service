@@ -1,5 +1,6 @@
 package com.pragma.jamarlesf.model.productmodel.gateways;
 
+import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
@@ -10,6 +11,8 @@ public interface ProductModelRepository {
     Mono<ProductModel> create(ProductModel product);
     Mono<ProductModel> findById(ProductModelId id);
     Mono<ProductModel> update(ProductModel product);
+    Flux<ProductModel> findAllByBranchId(BranchModelId branchId);
     Flux<ProductModel> findHighestStockByFranchiseId(FranchiseModelId franchiseId);
     Mono<Void> deleteById(ProductModelId id);
 }
+

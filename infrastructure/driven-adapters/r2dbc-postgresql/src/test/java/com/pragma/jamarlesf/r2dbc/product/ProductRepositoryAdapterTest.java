@@ -235,6 +235,75 @@ class ProductRepositoryAdapterTest {
     }
 
     @Test
+    void mustFindAllProductsByBranchIdSuccessfully() {
+        ProductData data1 = ProductData.builder()
+                .id(ID_ONE_HUNDRED_ONE_LONG)
+                .name(PRODUCT_NAME_DEFAULT)
+                .stock(STOCK_FIFTY)
+                .branchId(ID_TEN_LONG)
+                .build();
+
+        ProductData data2 = ProductData.builder()
+                .id(ID_TWO_HUNDRED_ONE_LONG)
+                .name(PRODUCT_NAME_FRIES)
+                .stock(STOCK_EIGHTY)
+                .branchId(ID_TEN_LONG)
+                .build();
+
+        when(repository.findAllByBranchId(ID_TEN_LONG)).thenReturn(Flux.just(data1, data2));
+
+        StepVerifier.create(adapter.findAllByBranchId(new BranchModelId(ID_TEN)))
+                .assertNext(p1 -> {
+                    assertNotNull(p1);
+                    assertEquals(ID_ONE_HUNDRED_ONE, p1.getId().value());
+                    assertEquals(PRODUCT_NAME_DEFAULT, p1.getName());
+                    assertEquals(STOCK_FIFTY, p1.getStock());
+                    assertEquals(ID_TEN, p1.getBranchId().value());
+                })
+                .assertNext(p2 -> {
+                    assertNotNull(p2);
+                    assertEquals(ID_TWO_HUNDRED_ONE, p2.getId().value());
+                    assertEquals(PRODUCT_NAME_FRIES, p2.getName());
+                    assertEquals(STOCK_EIGHTY, p2.getStock());
+                    assertEquals(ID_TEN, p2.getBranchId().value());
+                })
+                .verifyComplete();
+
+        verify(repository).findAllByBranchId(ID_TEN_LONG);
+    }
+
+    @Test
+    void mustReturnEmptyWhenBranchIdIsNullOnFindAllByBranchId() {
+        StepVerifier.create(adapter.findAllByBranchId(null))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenBranchIdIsBlankOnFindAllByBranchId() {
+        StepVerifier.create(adapter.findAllByBranchId(new BranchModelId(WHITESPACE_STRING)))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenBranchIdIsNonNumericOnFindAllByBranchId() {
+        StepVerifier.create(adapter.findAllByBranchId(new BranchModelId(ID_NON_NUMERIC)))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustPropagateErrorWhenDatabaseFailsOnFindAllByBranchId() {
+        RuntimeException dbException = new RuntimeException(ERROR_DB_QUERY_FAILED);
+        when(repository.findAllByBranchId(ID_TEN_LONG)).thenReturn(Flux.error(dbException));
+
+        StepVerifier.create(adapter.findAllByBranchId(new BranchModelId(ID_TEN)))
+                .expectErrorMatches(error -> error instanceof RuntimeException
+                        && error.getMessage().equals(ERROR_DB_QUERY_FAILED))
+                .verify();
+
+        verify(repository).findAllByBranchId(ID_TEN_LONG);
+    }
+
+    @Test
     void mustReturnEmptyWhenFranchiseIdIsNullOnFindHighestStock() {
         StepVerifier.create(adapter.findHighestStockByFranchiseId(null))
                 .verifyComplete();
