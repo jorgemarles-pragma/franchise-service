@@ -15,7 +15,7 @@ resource "aws_db_parameter_group" "pg16" {
 
   parameter {
     name  = "rds.force_ssl"
-    value = "0" # Allowed for internal private subnet VPC traffic
+    value = "1"
   }
 
   tags = {
@@ -41,9 +41,9 @@ resource "aws_db_instance" "postgres" {
   vpc_security_group_ids = var.security_group_ids
   parameter_group_name   = aws_db_parameter_group.pg16.name
 
-  multi_az               = var.multi_az
-  publicly_accessible    = false
-  skip_final_snapshot    = var.environment != "prod"
+  multi_az                  = var.multi_az
+  publicly_accessible       = false
+  skip_final_snapshot       = var.environment != "prod"
   final_snapshot_identifier = var.environment == "prod" ? "${var.project_name}-${var.environment}-final-snapshot" : null
 
   backup_retention_period = 7

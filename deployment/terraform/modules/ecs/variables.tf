@@ -69,3 +69,21 @@ variable "app_port" {
   description = "Port exposed by application"
   default     = 8080
 }
+
+variable "min_capacity" {
+  type        = number
+  description = "Minimum number of tasks for autoscaling"
+  default     = 2
+}
+
+variable "max_capacity" {
+  type        = number
+  description = "Maximum number of tasks for autoscaling"
+  default     = 4
+}
+
+variable "cpu_target_value" {
+  type        = number
+  description = "Target average CPU utilization percentage for autoscaling"
+  default     = 70
+}
