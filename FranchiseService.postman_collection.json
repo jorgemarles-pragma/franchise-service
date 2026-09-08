@@ -208,6 +208,35 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Actualizar Nombre de Producto",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Hamburguesa Doble Carne\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products/1/name",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"1",
+								"name"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
