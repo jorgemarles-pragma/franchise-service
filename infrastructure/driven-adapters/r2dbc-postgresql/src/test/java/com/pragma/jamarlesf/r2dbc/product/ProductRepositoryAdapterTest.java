@@ -1,6 +1,7 @@
 package com.pragma.jamarlesf.r2dbc.product;
 
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
+import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,8 +10,10 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -166,4 +169,74 @@ class ProductRepositoryAdapterTest {
 
         verify(repository).save(any(ProductData.class));
     }
+
+    @Test
+    void mustFindHighestStockProductsSuccessfully() {
+        ProductData data1 = ProductData.builder()
+                .id(101L)
+                .name("Hamburguesa Doble")
+                .stock(50)
+                .branchId(10L)
+                .build();
+
+        ProductData data2 = ProductData.builder()
+                .id(201L)
+                .name("Papas Medianas")
+                .stock(80)
+                .branchId(20L)
+                .build();
+
+        when(repository.findHighestStockByFranchiseId(1L)).thenReturn(Flux.just(data1, data2));
+
+        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId("1")))
+                .assertNext(p1 -> {
+                    assertNotNull(p1);
+                    assertEquals("101", p1.getId().value());
+                    assertEquals("Hamburguesa Doble", p1.getName());
+                    assertEquals(50, p1.getStock());
+                    assertEquals("10", p1.getBranchId().value());
+                })
+                .assertNext(p2 -> {
+                    assertNotNull(p2);
+                    assertEquals("201", p2.getId().value());
+                    assertEquals("Papas Medianas", p2.getName());
+                    assertEquals(80, p2.getStock());
+                    assertEquals("20", p2.getBranchId().value());
+                })
+                .verifyComplete();
+
+        verify(repository).findHighestStockByFranchiseId(1L);
+    }
+
+    @Test
+    void mustReturnEmptyWhenFranchiseIdIsNullOnFindHighestStock() {
+        StepVerifier.create(adapter.findHighestStockByFranchiseId(null))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenFranchiseIdIsBlankOnFindHighestStock() {
+        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId("  ")))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenFranchiseIdIsNonNumericOnFindHighestStock() {
+        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId("abc")))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustPropagateErrorWhenDatabaseFailsOnFindHighestStock() {
+        RuntimeException dbException = new RuntimeException("DB query failed");
+        when(repository.findHighestStockByFranchiseId(1L)).thenReturn(Flux.error(dbException));
+
+        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId("1")))
+                .expectErrorMatches(error -> error instanceof RuntimeException
+                        && error.getMessage().equals("DB query failed"))
+                .verify();
+
+        verify(repository).findHighestStockByFranchiseId(1L);
+    }
 }
+
