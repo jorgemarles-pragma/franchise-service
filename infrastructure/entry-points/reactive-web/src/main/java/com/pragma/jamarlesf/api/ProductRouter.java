@@ -1,7 +1,23 @@
 package com.pragma.jamarlesf.api;
 
+import com.pragma.jamarlesf.api.dto.request.ProductRequest;
+import com.pragma.jamarlesf.api.dto.request.UpdateProductNameRequest;
+import com.pragma.jamarlesf.api.dto.request.UpdateProductStockRequest;
+import com.pragma.jamarlesf.api.dto.response.ErrorResponse;
+import com.pragma.jamarlesf.api.dto.response.ProductResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.springdoc.core.annotations.RouterOperation;
+import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
@@ -20,6 +36,138 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 public class ProductRouter {
 
     @Bean
+    @RouterOperations({
+            @RouterOperation(
+                    path = "/api/branches/{branchId}/products",
+                    produces = {"application/json"},
+                    method = RequestMethod.POST,
+                    beanClass = ProductHandler.class,
+                    beanMethod = "addProduct",
+                    operation = @Operation(
+                            operationId = "addProductToBranch",
+                            summary = "Add a product to a branch",
+                            description = "Creates and associates a new product with an existing branch",
+                            tags = {"Products"},
+                            parameters = {
+                                    @Parameter(in = ParameterIn.PATH, name = "branchId", description = "Branch identifier", required = true)
+                            },
+                            requestBody = @RequestBody(
+                                    description = "Product data to create",
+                                    required = true,
+                                    content = @Content(schema = @Schema(implementation = ProductRequest.class))
+                            ),
+                            responses = {
+                                    @ApiResponse(responseCode = "201", description = "Product created successfully",
+                                            content = @Content(schema = @Schema(implementation = ProductResponse.class))),
+                                    @ApiResponse(responseCode = "400", description = "Invalid product data or stock",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                                    @ApiResponse(responseCode = "404", description = "Branch not found",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = "/api/branches/{branchId}/products/{productId}",
+                    method = RequestMethod.DELETE,
+                    beanClass = ProductHandler.class,
+                    beanMethod = "deleteProduct",
+                    operation = @Operation(
+                            operationId = "deleteProductFromBranch",
+                            summary = "Delete a product from a branch",
+                            description = "Removes a product belonging to the specified branch",
+                            tags = {"Products"},
+                            parameters = {
+                                    @Parameter(in = ParameterIn.PATH, name = "branchId", description = "Branch identifier", required = true),
+                                    @Parameter(in = ParameterIn.PATH, name = "productId", description = "Product identifier", required = true)
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
+                                    @ApiResponse(responseCode = "404", description = "Branch or Product not found",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = "/api/products/{productId}/stock",
+                    produces = {"application/json"},
+                    method = RequestMethod.PATCH,
+                    beanClass = ProductHandler.class,
+                    beanMethod = "updateStock",
+                    operation = @Operation(
+                            operationId = "modifyProductStock",
+                            summary = "Modify product stock",
+                            description = "Updates the stock count of an existing product",
+                            tags = {"Products"},
+                            parameters = {
+                                    @Parameter(in = ParameterIn.PATH, name = "productId", description = "Product identifier", required = true)
+                            },
+                            requestBody = @RequestBody(
+                                    description = "New stock payload",
+                                    required = true,
+                                    content = @Content(schema = @Schema(implementation = UpdateProductStockRequest.class))
+                            ),
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "Stock updated successfully",
+                                            content = @Content(schema = @Schema(implementation = ProductResponse.class))),
+                                    @ApiResponse(responseCode = "400", description = "Invalid stock (must be >= 0)",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                                    @ApiResponse(responseCode = "404", description = "Product not found",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = "/api/products/{productId}/name",
+                    produces = {"application/json"},
+                    method = RequestMethod.PATCH,
+                    beanClass = ProductHandler.class,
+                    beanMethod = "updateProductName",
+                    operation = @Operation(
+                            operationId = "updateProductName",
+                            summary = "Update product name",
+                            description = "Updates the name of an existing product",
+                            tags = {"Products"},
+                            parameters = {
+                                    @Parameter(in = ParameterIn.PATH, name = "productId", description = "Product identifier", required = true)
+                            },
+                            requestBody = @RequestBody(
+                                    description = "New product name payload",
+                                    required = true,
+                                    content = @Content(schema = @Schema(implementation = UpdateProductNameRequest.class))
+                            ),
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "Product name updated successfully",
+                                            content = @Content(schema = @Schema(implementation = ProductResponse.class))),
+                                    @ApiResponse(responseCode = "400", description = "Invalid product name",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                                    @ApiResponse(responseCode = "404", description = "Product not found",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = "/api/franchises/{franchiseId}/max-stock-products",
+                    produces = {"application/json"},
+                    method = RequestMethod.GET,
+                    beanClass = ProductHandler.class,
+                    beanMethod = "getHighestStockProducts",
+                    operation = @Operation(
+                            operationId = "getHighestStockProductsByFranchise",
+                            summary = "Get product with highest stock per branch for a franchise",
+                            description = "Returns the product with the maximum stock for each branch belonging to the given franchise",
+                            tags = {"Products"},
+                            parameters = {
+                                    @Parameter(in = ParameterIn.PATH, name = "franchiseId", description = "Franchise identifier", required = true)
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "List of products with highest stock per branch",
+                                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class)))),
+                                    @ApiResponse(responseCode = "404", description = "Franchise not found",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                            }
+                    )
+            )
+    })
     public RouterFunction<ServerResponse> productRouterFunction(ProductHandler handler) {
         return route(POST(PRODUCTS_PATH), handler::addProduct)
                 .andRoute(DELETE(BRANCH_PRODUCT_PATH), handler::deleteProduct)
@@ -28,4 +176,3 @@ public class ProductRouter {
                 .andRoute(GET(FRANCHISE_HIGHEST_STOCK_PRODUCTS_PATH), handler::getHighestStockProducts);
     }
 }
-
