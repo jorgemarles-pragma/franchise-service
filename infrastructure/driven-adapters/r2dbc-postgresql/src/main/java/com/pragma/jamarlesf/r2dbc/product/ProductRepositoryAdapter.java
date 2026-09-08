@@ -36,7 +36,7 @@ public class ProductRepositoryAdapter
     public Mono<ProductModel> findById(ProductModelId id) {
         return Mono.justOrEmpty(id)
                 .map(ProductModelId::value)
-                .filter(val -> val != null && !val.isBlank())
+                .filter(val -> !val.isBlank())
                 .map(Long::valueOf)
                 .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
                 .flatMap(this::findById);
@@ -51,7 +51,7 @@ public class ProductRepositoryAdapter
     public Flux<ProductModel> findHighestStockByFranchiseId(FranchiseModelId franchiseId) {
         return Mono.justOrEmpty(franchiseId)
                 .map(FranchiseModelId::value)
-                .filter(val -> val != null && !val.isBlank())
+                .filter(val -> !val.isBlank())
                 .map(Long::valueOf)
                 .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
                 .flatMapMany(repository::findHighestStockByFranchiseId)

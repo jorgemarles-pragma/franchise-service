@@ -34,7 +34,7 @@ public class BranchRepositoryAdapter
     public Mono<BranchModel> findById(BranchModelId id) {
         return Mono.justOrEmpty(id)
                 .map(BranchModelId::value)
-                .filter(val -> val != null && !val.isBlank())
+                .filter(val -> !val.isBlank())
                 .map(Long::valueOf)
                 .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
                 .flatMap(this::findById);
