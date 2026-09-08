@@ -2,6 +2,7 @@ package com.pragma.jamarlesf.api;
 
 import com.pragma.jamarlesf.model.exception.BranchNotFoundException;
 import com.pragma.jamarlesf.model.exception.FranchiseNotFoundException;
+import com.pragma.jamarlesf.model.exception.InvalidProductStockException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -25,6 +26,14 @@ public class GlobalExceptionHandler {
     public Mono<ResponseEntity<Map<String, String>>> handleBranchNotFoundException(BranchNotFoundException ex) {
         return Mono.just(
                 ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", ex.getMessage()))
+        );
+    }
+
+    @ExceptionHandler(InvalidProductStockException.class)
+    public Mono<ResponseEntity<Map<String, String>>> handleInvalidProductStockException(InvalidProductStockException ex) {
+        return Mono.just(
+                ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("error", ex.getMessage()))
         );
     }
