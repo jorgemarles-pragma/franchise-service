@@ -19,20 +19,24 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import static com.pragma.jamarlesf.api.RouterConstants.APPLICATION_JSON;
 import static com.pragma.jamarlesf.api.RouterConstants.FRANCHISES_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.FRANCHISE_NAME_PATH;
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.TAG_FRANCHISES;
 import static org.springframework.web.reactive.function.server.RequestPredicates.PATCH;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration
+@SuppressWarnings("java:S1075")
 public class FranchiseRouter {
 
     @Bean
     @RouterOperations({
             @RouterOperation(
-                    path = "/api/franchises",
-                    produces = {"application/json"},
+                    path = FRANCHISES_PATH,
+                    produces = {APPLICATION_JSON},
                     method = RequestMethod.POST,
                     beanClass = FranchiseHandler.class,
                     beanMethod = "createFranchise",
@@ -40,7 +44,7 @@ public class FranchiseRouter {
                             operationId = "createFranchise",
                             summary = "Create a new franchise",
                             description = "Registers a new franchise in the system with reactive non-blocking persistence",
-                            tags = {"Franchises"},
+                            tags = {TAG_FRANCHISES},
                             requestBody = @RequestBody(
                                     description = "Franchise data to create",
                                     required = true,
@@ -55,8 +59,8 @@ public class FranchiseRouter {
                     )
             ),
             @RouterOperation(
-                    path = "/api/franchises/{franchiseId}/name",
-                    produces = {"application/json"},
+                    path = FRANCHISE_NAME_PATH,
+                    produces = {APPLICATION_JSON},
                     method = RequestMethod.PATCH,
                     beanClass = FranchiseHandler.class,
                     beanMethod = "updateFranchiseName",
@@ -64,9 +68,9 @@ public class FranchiseRouter {
                             operationId = "updateFranchiseName",
                             summary = "Update franchise name",
                             description = "Updates the name of an existing franchise",
-                            tags = {"Franchises"},
+                            tags = {TAG_FRANCHISES},
                             parameters = {
-                                    @Parameter(in = ParameterIn.PATH, name = "franchiseId", description = "Franchise identifier", required = true)
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_FRANCHISE_ID, description = "Franchise identifier", required = true)
                             },
                             requestBody = @RequestBody(
                                     description = "New franchise name payload",

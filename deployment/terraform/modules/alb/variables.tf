@@ -35,3 +35,15 @@ variable "health_check_path" {
   description = "Path for health check"
   default     = "/actuator/health"
 }
+
+variable "enable_access_logs" {
+  type        = bool
+  description = "Whether to enable access logs for the ALB"
+  default     = false
+}
+
+variable "access_logs_bucket" {
+  type        = string
+  description = "The S3 bucket name to store ALB access logs"
+  default     = "franchise-service-alb-logs"
+}

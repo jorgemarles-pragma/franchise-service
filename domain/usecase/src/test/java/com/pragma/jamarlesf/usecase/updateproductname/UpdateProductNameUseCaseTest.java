@@ -12,6 +12,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
@@ -71,40 +74,14 @@ class UpdateProductNameUseCaseTest {
         verify(productModelRepository).update(any(ProductModel.class));
     }
 
-    @Test
-    @DisplayName("Should emit InvalidProductNameException when new name is null")
-    void shouldEmitInvalidProductNameExceptionWhenNameIsNull() {
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {UseCaseTestConstants.WHITESPACE_STRING, "\t\n"})
+    @DisplayName("Should emit InvalidProductNameException when new name is null, empty, or blank")
+    void shouldEmitInvalidProductNameExceptionWhenNameIsInvalid(String invalidName) {
         ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
 
-        StepVerifier.create(useCase.execute(productId, null))
-                .expectErrorMatches(throwable -> throwable instanceof InvalidProductNameException
-                        && throwable.getMessage().contains(ErrorMessageConstants.PRODUCT_NAME_CANNOT_BE_EMPTY_OR_NULL))
-                .verify();
-
-        verify(productModelRepository, never()).findById(any(ProductModelId.class));
-        verify(productModelRepository, never()).update(any(ProductModel.class));
-    }
-
-    @Test
-    @DisplayName("Should emit InvalidProductNameException when new name is empty")
-    void shouldEmitInvalidProductNameExceptionWhenNameIsEmpty() {
-        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
-
-        StepVerifier.create(useCase.execute(productId, UseCaseTestConstants.EMPTY_STRING))
-                .expectErrorMatches(throwable -> throwable instanceof InvalidProductNameException
-                        && throwable.getMessage().contains(ErrorMessageConstants.PRODUCT_NAME_CANNOT_BE_EMPTY_OR_NULL))
-                .verify();
-
-        verify(productModelRepository, never()).findById(any(ProductModelId.class));
-        verify(productModelRepository, never()).update(any(ProductModel.class));
-    }
-
-    @Test
-    @DisplayName("Should emit InvalidProductNameException when new name is whitespace only")
-    void shouldEmitInvalidProductNameExceptionWhenNameIsWhitespaceOnly() {
-        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
-
-        StepVerifier.create(useCase.execute(productId, UseCaseTestConstants.WHITESPACE_STRING))
+        StepVerifier.create(useCase.execute(productId, invalidName))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidProductNameException
                         && throwable.getMessage().contains(ErrorMessageConstants.PRODUCT_NAME_CANNOT_BE_EMPTY_OR_NULL))
                 .verify();

@@ -19,20 +19,25 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import static com.pragma.jamarlesf.api.RouterConstants.APPLICATION_JSON;
 import static com.pragma.jamarlesf.api.RouterConstants.BRANCHES_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.BRANCH_NAME_PATH;
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_BRANCH_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.TAG_BRANCHES;
 import static org.springframework.web.reactive.function.server.RequestPredicates.PATCH;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration
+@SuppressWarnings("java:S1075")
 public class BranchRouter {
 
     @Bean
     @RouterOperations({
             @RouterOperation(
-                    path = "/api/franchises/{franchiseId}/branches",
-                    produces = {"application/json"},
+                    path = BRANCHES_PATH,
+                    produces = {APPLICATION_JSON},
                     method = RequestMethod.POST,
                     beanClass = BranchHandler.class,
                     beanMethod = "addBranch",
@@ -40,9 +45,9 @@ public class BranchRouter {
                             operationId = "addBranchToFranchise",
                             summary = "Add a branch to a franchise",
                             description = "Adds a new branch associated with the specified franchise",
-                            tags = {"Branches"},
+                            tags = {TAG_BRANCHES},
                             parameters = {
-                                    @Parameter(in = ParameterIn.PATH, name = "franchiseId", description = "Franchise identifier", required = true)
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_FRANCHISE_ID, description = "Franchise identifier", required = true)
                             },
                             requestBody = @RequestBody(
                                     description = "Branch creation data",
@@ -60,8 +65,8 @@ public class BranchRouter {
                     )
             ),
             @RouterOperation(
-                    path = "/api/branches/{branchId}/name",
-                    produces = {"application/json"},
+                    path = BRANCH_NAME_PATH,
+                    produces = {APPLICATION_JSON},
                     method = RequestMethod.PATCH,
                     beanClass = BranchHandler.class,
                     beanMethod = "updateBranchName",
@@ -69,9 +74,9 @@ public class BranchRouter {
                             operationId = "updateBranchName",
                             summary = "Update branch name",
                             description = "Updates the name of an existing branch",
-                            tags = {"Branches"},
+                            tags = {TAG_BRANCHES},
                             parameters = {
-                                    @Parameter(in = ParameterIn.PATH, name = "branchId", description = "Branch identifier", required = true)
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_BRANCH_ID, description = "Branch identifier", required = true)
                             },
                             requestBody = @RequestBody(
                                     description = "New branch name payload",
