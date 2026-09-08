@@ -1,0 +1,87 @@
+package com.pragma.jamarlesf.usecase.getfranchisebyid;
+
+import com.pragma.jamarlesf.model.exception.FranchiseNotFoundException;
+import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
+import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
+import com.pragma.jamarlesf.model.franchisemodel.gateways.FranchiseModelRepository;
+import com.pragma.jamarlesf.usecase.constant.UseCaseTestConstants;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class GetFranchiseByIdUseCaseTest {
+
+    @Mock
+    private FranchiseModelRepository franchiseModelRepository;
+
+    private GetFranchiseByIdUseCase useCase;
+
+    @BeforeEach
+    void setUp() {
+        useCase = new GetFranchiseByIdUseCase(franchiseModelRepository);
+    }
+
+    @Test
+    @DisplayName("Should return franchise successfully when franchise exists")
+    void shouldReturnFranchiseSuccessfullyWhenFranchiseExists() {
+        FranchiseModelId franchiseId = new FranchiseModelId(UseCaseTestConstants.ID_ONE);
+        FranchiseModel franchise = FranchiseModel.builder()
+                .id(franchiseId)
+                .name(UseCaseTestConstants.FRANCHISE_NAME_MCDONALDS)
+                .build();
+
+        when(franchiseModelRepository.findById(franchiseId)).thenReturn(Mono.just(franchise));
+
+        StepVerifier.create(useCase.execute(franchiseId))
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals(UseCaseTestConstants.ID_ONE, result.getId().value());
+                    assertEquals(UseCaseTestConstants.FRANCHISE_NAME_MCDONALDS, result.getName());
+                })
+                .verifyComplete();
+
+        verify(franchiseModelRepository).findById(franchiseId);
+    }
+
+    @Test
+    @DisplayName("Should emit FranchiseNotFoundException when franchise does not exist")
+    void shouldEmitFranchiseNotFoundExceptionWhenFranchiseDoesNotExist() {
+        FranchiseModelId franchiseId = new FranchiseModelId(UseCaseTestConstants.ID_NON_EXISTENT);
+
+        when(franchiseModelRepository.findById(franchiseId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(useCase.execute(franchiseId))
+                .expectErrorMatches(throwable -> throwable instanceof FranchiseNotFoundException
+                        && throwable.getMessage().contains(UseCaseTestConstants.ID_NON_EXISTENT))
+                .verify();
+
+        verify(franchiseModelRepository).findById(franchiseId);
+    }
+
+    @Test
+    @DisplayName("Should propagate error when repository fails")
+    void shouldPropagateErrorWhenRepositoryFails() {
+        FranchiseModelId franchiseId = new FranchiseModelId(UseCaseTestConstants.ID_ONE);
+
+        when(franchiseModelRepository.findById(franchiseId))
+                .thenReturn(Mono.error(new RuntimeException(UseCaseTestConstants.DATABASE_ERROR_MSG)));
+
+        StepVerifier.create(useCase.execute(franchiseId))
+                .expectErrorMatches(throwable -> throwable instanceof RuntimeException
+                        && throwable.getMessage().equals(UseCaseTestConstants.DATABASE_ERROR_MSG))
+                .verify();
+
+        verify(franchiseModelRepository).findById(franchiseId);
+    }
+}

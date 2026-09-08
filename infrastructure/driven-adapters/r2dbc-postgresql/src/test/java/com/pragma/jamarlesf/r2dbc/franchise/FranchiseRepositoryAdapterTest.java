@@ -11,6 +11,7 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -152,5 +153,48 @@ class FranchiseRepositoryAdapterTest {
                 .verifyComplete();
 
         verify(repository).save(any(FranchiseData.class));
+    }
+
+    @Test
+    void mustFindAllFranchisesSuccessfully() {
+        FranchiseData data1 = FranchiseData.builder()
+                .id(R2dbcTestConstants.ID_ONE_LONG)
+                .name(R2dbcTestConstants.FRANCHISE_NAME_DEFAULT)
+                .build();
+
+        FranchiseData data2 = FranchiseData.builder()
+                .id(R2dbcTestConstants.ID_TWO_LONG)
+                .name(R2dbcTestConstants.FRANCHISE_NAME_UPDATED)
+                .build();
+
+        when(repository.findAll()).thenReturn(Flux.just(data1, data2));
+
+        StepVerifier.create(adapter.findAll())
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals(R2dbcTestConstants.ID_ONE, result.getId().value());
+                    assertEquals(R2dbcTestConstants.FRANCHISE_NAME_DEFAULT, result.getName());
+                })
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals(R2dbcTestConstants.ID_TWO, result.getId().value());
+                    assertEquals(R2dbcTestConstants.FRANCHISE_NAME_UPDATED, result.getName());
+                })
+                .verifyComplete();
+
+        verify(repository).findAll();
+    }
+
+    @Test
+    void mustPropagateErrorWhenFindAllFails() {
+        RuntimeException dbException = new RuntimeException("Database error");
+        when(repository.findAll()).thenReturn(Flux.error(dbException));
+
+        StepVerifier.create(adapter.findAll())
+                .expectErrorMatches(error -> error instanceof RuntimeException
+                        && error.getMessage().equals("Database error"))
+                .verify();
+
+        verify(repository).findAll();
     }
 }
