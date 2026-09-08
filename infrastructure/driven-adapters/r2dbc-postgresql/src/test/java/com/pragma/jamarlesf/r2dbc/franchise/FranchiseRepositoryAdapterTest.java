@@ -2,6 +2,7 @@ package com.pragma.jamarlesf.r2dbc.franchise;
 
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
+import com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants;
 import com.pragma.jamarlesf.r2dbc.helper.ResilienceOperators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,12 +41,12 @@ class FranchiseRepositoryAdapterTest {
     @Test
     void mustCreateFranchiseSuccessfully() {
         FranchiseModel inputModel = FranchiseModel.builder()
-                .name("Franquicia Nequi")
+                .name(R2dbcTestConstants.FRANCHISE_NAME_DEFAULT)
                 .build();
 
         FranchiseData savedData = FranchiseData.builder()
-                .id(1L)
-                .name("Franquicia Nequi")
+                .id(R2dbcTestConstants.ID_ONE_LONG)
+                .name(R2dbcTestConstants.FRANCHISE_NAME_DEFAULT)
                 .build();
 
         when(repository.save(any(FranchiseData.class))).thenReturn(Mono.just(savedData));
@@ -54,8 +55,8 @@ class FranchiseRepositoryAdapterTest {
                 .assertNext(result -> {
                     assertNotNull(result);
                     assertNotNull(result.getId());
-                    assertEquals("1", result.getId().value());
-                    assertEquals("Franquicia Nequi", result.getName());
+                    assertEquals(R2dbcTestConstants.ID_ONE, result.getId().value());
+                    assertEquals(R2dbcTestConstants.FRANCHISE_NAME_DEFAULT, result.getName());
                 })
                 .verifyComplete();
 
@@ -65,15 +66,15 @@ class FranchiseRepositoryAdapterTest {
     @Test
     void mustPropagateErrorWhenDatabaseFails() {
         FranchiseModel inputModel = FranchiseModel.builder()
-                .name("Franquicia Fallida")
+                .name(R2dbcTestConstants.FRANCHISE_NAME_DEFAULT)
                 .build();
 
-        RuntimeException dbException = new RuntimeException("Database connection timeout");
+        RuntimeException dbException = new RuntimeException("Database error");
         when(repository.save(any(FranchiseData.class))).thenReturn(Mono.error(dbException));
 
         StepVerifier.create(adapter.create(inputModel))
                 .expectErrorMatches(error -> error instanceof RuntimeException
-                        && error.getMessage().equals("Database connection timeout"))
+                        && error.getMessage().equals("Database error"))
                 .verify();
 
         verify(repository).save(any(FranchiseData.class));
@@ -82,28 +83,28 @@ class FranchiseRepositoryAdapterTest {
     @Test
     void mustFindFranchiseByIdSuccessfully() {
         FranchiseData foundData = FranchiseData.builder()
-                .id(1L)
-                .name("Franquicia Existente")
+                .id(R2dbcTestConstants.ID_ONE_LONG)
+                .name(R2dbcTestConstants.FRANCHISE_NAME_DEFAULT)
                 .build();
 
-        when(repository.findById(1L)).thenReturn(Mono.just(foundData));
+        when(repository.findById(R2dbcTestConstants.ID_ONE_LONG)).thenReturn(Mono.just(foundData));
 
-        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId("1")))
+        StepVerifier.create(adapter.findById(new FranchiseModelId(R2dbcTestConstants.ID_ONE)))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("1", result.getId().value());
-                    assertEquals("Franquicia Existente", result.getName());
+                    assertEquals(R2dbcTestConstants.ID_ONE, result.getId().value());
+                    assertEquals(R2dbcTestConstants.FRANCHISE_NAME_DEFAULT, result.getName());
                 })
                 .verifyComplete();
 
-        verify(repository).findById(1L);
+        verify(repository).findById(R2dbcTestConstants.ID_ONE_LONG);
     }
 
     @Test
     void mustReturnEmptyWhenFranchiseNotFound() {
         when(repository.findById(999L)).thenReturn(Mono.empty());
 
-        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId("999")))
+        StepVerifier.create(adapter.findById(new FranchiseModelId("999")))
                 .verifyComplete();
 
         verify(repository).findById(999L);
@@ -111,32 +112,32 @@ class FranchiseRepositoryAdapterTest {
 
     @Test
     void mustReturnEmptyWhenIdIsNull() {
-        StepVerifier.create(adapter.findById((com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId) null))
+        StepVerifier.create(adapter.findById((FranchiseModelId) null))
                 .verifyComplete();
     }
 
     @Test
     void mustReturnEmptyWhenIdIsBlank() {
-        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId("  ")))
+        StepVerifier.create(adapter.findById(new FranchiseModelId(R2dbcTestConstants.WHITESPACE_STRING)))
                 .verifyComplete();
     }
 
     @Test
     void mustReturnEmptyWhenIdIsNonNumeric() {
-        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId("abc")))
+        StepVerifier.create(adapter.findById(new FranchiseModelId(R2dbcTestConstants.ID_INVALID)))
                 .verifyComplete();
     }
 
     @Test
     void mustUpdateFranchiseSuccessfully() {
         FranchiseModel inputModel = FranchiseModel.builder()
-                .id(new FranchiseModelId("1"))
-                .name("Franquicia Nequi Actualizada")
+                .id(new FranchiseModelId(R2dbcTestConstants.ID_ONE))
+                .name(R2dbcTestConstants.FRANCHISE_NAME_UPDATED)
                 .build();
 
         FranchiseData savedData = FranchiseData.builder()
-                .id(1L)
-                .name("Franquicia Nequi Actualizada")
+                .id(R2dbcTestConstants.ID_ONE_LONG)
+                .name(R2dbcTestConstants.FRANCHISE_NAME_UPDATED)
                 .build();
 
         when(repository.save(any(FranchiseData.class))).thenReturn(Mono.just(savedData));
@@ -145,8 +146,8 @@ class FranchiseRepositoryAdapterTest {
                 .assertNext(result -> {
                     assertNotNull(result);
                     assertNotNull(result.getId());
-                    assertEquals("1", result.getId().value());
-                    assertEquals("Franquicia Nequi Actualizada", result.getName());
+                    assertEquals(R2dbcTestConstants.ID_ONE, result.getId().value());
+                    assertEquals(R2dbcTestConstants.FRANCHISE_NAME_UPDATED, result.getName());
                 })
                 .verifyComplete();
 

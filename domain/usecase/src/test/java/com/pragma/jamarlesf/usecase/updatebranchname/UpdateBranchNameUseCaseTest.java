@@ -3,9 +3,11 @@ package com.pragma.jamarlesf.usecase.updatebranchname;
 import com.pragma.jamarlesf.model.branchmodel.BranchModel;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.branchmodel.gateways.BranchModelRepository;
+import com.pragma.jamarlesf.model.constant.ErrorMessageConstants;
 import com.pragma.jamarlesf.model.exception.BranchNotFoundException;
 import com.pragma.jamarlesf.model.exception.InvalidBranchNameException;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
+import com.pragma.jamarlesf.usecase.constant.UseCaseTestConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,17 +40,17 @@ class UpdateBranchNameUseCaseTest {
     @Test
     @DisplayName("Should update branch name successfully when branch exists and new name is valid")
     void shouldUpdateBranchNameSuccessfullyWhenBranchExistsAndNameIsValid() {
-        BranchModelId branchId = new BranchModelId("10");
-        String newName = "  Sucursal Poblado  ";
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
+        String newName = UseCaseTestConstants.BRANCH_NAME_WITH_SPACES;
 
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name("Sucursal Medellín")
-                .franchiseId(new FranchiseModelId("1"))
+                .name(UseCaseTestConstants.BRANCH_NAME_OLD)
+                .franchiseId(new FranchiseModelId(UseCaseTestConstants.ID_ONE))
                 .build();
 
         BranchModel updatedBranch = existingBranch.toBuilder()
-                .name("Sucursal Poblado")
+                .name(UseCaseTestConstants.BRANCH_NAME_NEW)
                 .build();
 
         when(branchModelRepository.findById(branchId)).thenReturn(Mono.just(existingBranch));
@@ -57,9 +59,9 @@ class UpdateBranchNameUseCaseTest {
         StepVerifier.create(useCase.execute(branchId, newName))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("10", result.getId().value());
-                    assertEquals("Sucursal Poblado", result.getName());
-                    assertEquals("1", result.getFranchiseId().value());
+                    assertEquals(UseCaseTestConstants.ID_TEN, result.getId().value());
+                    assertEquals(UseCaseTestConstants.BRANCH_NAME_NEW, result.getName());
+                    assertEquals(UseCaseTestConstants.ID_ONE, result.getFranchiseId().value());
                 })
                 .verifyComplete();
 
@@ -70,11 +72,11 @@ class UpdateBranchNameUseCaseTest {
     @Test
     @DisplayName("Should emit InvalidBranchNameException when new name is null")
     void shouldEmitInvalidBranchNameExceptionWhenNameIsNull() {
-        BranchModelId branchId = new BranchModelId("10");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
 
         StepVerifier.create(useCase.execute(branchId, null))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidBranchNameException
-                        && throwable.getMessage().contains("Branch name cannot be empty or null"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.BRANCH_NAME_CANNOT_BE_EMPTY_OR_NULL))
                 .verify();
 
         verify(branchModelRepository, never()).findById(any(BranchModelId.class));
@@ -84,11 +86,11 @@ class UpdateBranchNameUseCaseTest {
     @Test
     @DisplayName("Should emit InvalidBranchNameException when new name is empty")
     void shouldEmitInvalidBranchNameExceptionWhenNameIsEmpty() {
-        BranchModelId branchId = new BranchModelId("10");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
 
-        StepVerifier.create(useCase.execute(branchId, ""))
+        StepVerifier.create(useCase.execute(branchId, UseCaseTestConstants.EMPTY_STRING))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidBranchNameException
-                        && throwable.getMessage().contains("Branch name cannot be empty or null"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.BRANCH_NAME_CANNOT_BE_EMPTY_OR_NULL))
                 .verify();
 
         verify(branchModelRepository, never()).findById(any(BranchModelId.class));
@@ -98,11 +100,11 @@ class UpdateBranchNameUseCaseTest {
     @Test
     @DisplayName("Should emit InvalidBranchNameException when new name is whitespace only")
     void shouldEmitInvalidBranchNameExceptionWhenNameIsWhitespaceOnly() {
-        BranchModelId branchId = new BranchModelId("10");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
 
-        StepVerifier.create(useCase.execute(branchId, "   "))
+        StepVerifier.create(useCase.execute(branchId, UseCaseTestConstants.WHITESPACE_STRING))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidBranchNameException
-                        && throwable.getMessage().contains("Branch name cannot be empty or null"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.BRANCH_NAME_CANNOT_BE_EMPTY_OR_NULL))
                 .verify();
 
         verify(branchModelRepository, never()).findById(any(BranchModelId.class));
@@ -112,14 +114,14 @@ class UpdateBranchNameUseCaseTest {
     @Test
     @DisplayName("Should emit BranchNotFoundException when branch does not exist")
     void shouldEmitBranchNotFoundExceptionWhenBranchDoesNotExist() {
-        BranchModelId branchId = new BranchModelId("999");
-        String newName = "Sucursal Poblado";
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_NON_EXISTENT);
+        String newName = UseCaseTestConstants.BRANCH_NAME_NEW;
 
         when(branchModelRepository.findById(branchId)).thenReturn(Mono.empty());
 
         StepVerifier.create(useCase.execute(branchId, newName))
                 .expectErrorMatches(throwable -> throwable instanceof BranchNotFoundException
-                        && throwable.getMessage().contains("999"))
+                        && throwable.getMessage().contains(UseCaseTestConstants.ID_NON_EXISTENT))
                 .verify();
 
         verify(branchModelRepository).findById(branchId);

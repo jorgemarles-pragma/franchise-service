@@ -14,6 +14,17 @@ import org.reactivecommons.utils.ObjectMapper;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.BRANCH_NAME_DEFAULT;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.BRANCH_NAME_UPDATED;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ERROR_DB_TIMEOUT;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_NINE_NINE_NINE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_NINE_NINE_NINE_LONG;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_NON_NUMERIC;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_ONE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_ONE_LONG;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_TEN;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_TEN_LONG;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.WHITESPACE_STRING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,14 +52,14 @@ class BranchRepositoryAdapterTest {
     @Test
     void mustCreateBranchSuccessfully() {
         BranchModel inputModel = BranchModel.builder()
-                .name("Sucursal Norte")
-                .franchiseId(new FranchiseModelId("1"))
+                .name(BRANCH_NAME_DEFAULT)
+                .franchiseId(new FranchiseModelId(ID_ONE))
                 .build();
 
         BranchData savedData = BranchData.builder()
-                .id(10L)
-                .name("Sucursal Norte")
-                .franchiseId(1L)
+                .id(ID_TEN_LONG)
+                .name(BRANCH_NAME_DEFAULT)
+                .franchiseId(ID_ONE_LONG)
                 .build();
 
         when(repository.save(any(BranchData.class))).thenReturn(Mono.just(savedData));
@@ -57,10 +68,10 @@ class BranchRepositoryAdapterTest {
                 .assertNext(result -> {
                     assertNotNull(result);
                     assertNotNull(result.getId());
-                    assertEquals("10", result.getId().value());
-                    assertEquals("Sucursal Norte", result.getName());
+                    assertEquals(ID_TEN, result.getId().value());
+                    assertEquals(BRANCH_NAME_DEFAULT, result.getName());
                     assertNotNull(result.getFranchiseId());
-                    assertEquals("1", result.getFranchiseId().value());
+                    assertEquals(ID_ONE, result.getFranchiseId().value());
                 })
                 .verifyComplete();
 
@@ -70,16 +81,16 @@ class BranchRepositoryAdapterTest {
     @Test
     void mustPropagateErrorWhenDatabaseFails() {
         BranchModel inputModel = BranchModel.builder()
-                .name("Sucursal Fallida")
-                .franchiseId(new FranchiseModelId("1"))
+                .name(BRANCH_NAME_DEFAULT)
+                .franchiseId(new FranchiseModelId(ID_ONE))
                 .build();
 
-        RuntimeException dbException = new RuntimeException("Database connection timeout");
+        RuntimeException dbException = new RuntimeException(ERROR_DB_TIMEOUT);
         when(repository.save(any(BranchData.class))).thenReturn(Mono.error(dbException));
 
         StepVerifier.create(adapter.create(inputModel))
                 .expectErrorMatches(error -> error instanceof RuntimeException
-                        && error.getMessage().equals("Database connection timeout"))
+                        && error.getMessage().equals(ERROR_DB_TIMEOUT))
                 .verify();
 
         verify(repository).save(any(BranchData.class));
@@ -88,33 +99,33 @@ class BranchRepositoryAdapterTest {
     @Test
     void mustFindBranchByIdSuccessfully() {
         BranchData foundData = BranchData.builder()
-                .id(10L)
-                .name("Sucursal Existente")
-                .franchiseId(1L)
+                .id(ID_TEN_LONG)
+                .name(BRANCH_NAME_DEFAULT)
+                .franchiseId(ID_ONE_LONG)
                 .build();
 
-        when(repository.findById(10L)).thenReturn(Mono.just(foundData));
+        when(repository.findById(ID_TEN_LONG)).thenReturn(Mono.just(foundData));
 
-        StepVerifier.create(adapter.findById(new BranchModelId("10")))
+        StepVerifier.create(adapter.findById(new BranchModelId(ID_TEN)))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("10", result.getId().value());
-                    assertEquals("Sucursal Existente", result.getName());
-                    assertEquals("1", result.getFranchiseId().value());
+                    assertEquals(ID_TEN, result.getId().value());
+                    assertEquals(BRANCH_NAME_DEFAULT, result.getName());
+                    assertEquals(ID_ONE, result.getFranchiseId().value());
                 })
                 .verifyComplete();
 
-        verify(repository).findById(10L);
+        verify(repository).findById(ID_TEN_LONG);
     }
 
     @Test
     void mustReturnEmptyWhenBranchNotFound() {
-        when(repository.findById(999L)).thenReturn(Mono.empty());
+        when(repository.findById(ID_NINE_NINE_NINE_LONG)).thenReturn(Mono.empty());
 
-        StepVerifier.create(adapter.findById(new BranchModelId("999")))
+        StepVerifier.create(adapter.findById(new BranchModelId(ID_NINE_NINE_NINE)))
                 .verifyComplete();
 
-        verify(repository).findById(999L);
+        verify(repository).findById(ID_NINE_NINE_NINE_LONG);
     }
 
     @Test
@@ -125,28 +136,28 @@ class BranchRepositoryAdapterTest {
 
     @Test
     void mustReturnEmptyWhenIdIsBlank() {
-        StepVerifier.create(adapter.findById(new BranchModelId("   ")))
+        StepVerifier.create(adapter.findById(new BranchModelId(WHITESPACE_STRING)))
                 .verifyComplete();
     }
 
     @Test
     void mustReturnEmptyWhenIdIsNonNumeric() {
-        StepVerifier.create(adapter.findById(new BranchModelId("xyz")))
+        StepVerifier.create(adapter.findById(new BranchModelId(ID_NON_NUMERIC)))
                 .verifyComplete();
     }
 
     @Test
     void mustUpdateBranchSuccessfully() {
         BranchModel inputModel = BranchModel.builder()
-                .id(new BranchModelId("10"))
-                .name("Sucursal Poblado Actualizada")
-                .franchiseId(new FranchiseModelId("1"))
+                .id(new BranchModelId(ID_TEN))
+                .name(BRANCH_NAME_UPDATED)
+                .franchiseId(new FranchiseModelId(ID_ONE))
                 .build();
 
         BranchData savedData = BranchData.builder()
-                .id(10L)
-                .name("Sucursal Poblado Actualizada")
-                .franchiseId(1L)
+                .id(ID_TEN_LONG)
+                .name(BRANCH_NAME_UPDATED)
+                .franchiseId(ID_ONE_LONG)
                 .build();
 
         when(repository.save(any(BranchData.class))).thenReturn(Mono.just(savedData));
@@ -155,10 +166,10 @@ class BranchRepositoryAdapterTest {
                 .assertNext(result -> {
                     assertNotNull(result);
                     assertNotNull(result.getId());
-                    assertEquals("10", result.getId().value());
-                    assertEquals("Sucursal Poblado Actualizada", result.getName());
+                    assertEquals(ID_TEN, result.getId().value());
+                    assertEquals(BRANCH_NAME_UPDATED, result.getName());
                     assertNotNull(result.getFranchiseId());
-                    assertEquals("1", result.getFranchiseId().value());
+                    assertEquals(ID_ONE, result.getFranchiseId().value());
                 })
                 .verifyComplete();
 

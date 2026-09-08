@@ -1,9 +1,11 @@
 package com.pragma.jamarlesf.usecase.createfranchise;
 
+import com.pragma.jamarlesf.model.constant.ErrorMessageConstants;
 import com.pragma.jamarlesf.model.exception.InvalidFranchiseNameException;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.franchisemodel.gateways.FranchiseModelRepository;
+import com.pragma.jamarlesf.usecase.constant.UseCaseTestConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,12 +39,12 @@ class CreateFranchiseUseCaseTest {
     @DisplayName("Should create franchise successfully when name is valid")
     void shouldCreateFranchiseSuccessfullyWhenNameIsValid() {
         FranchiseModel inputFranchise = FranchiseModel.builder()
-                .name("McDonalds")
+                .name(UseCaseTestConstants.FRANCHISE_NAME_MCDONALDS)
                 .build();
 
         FranchiseModel createdFranchise = FranchiseModel.builder()
-                .id(new FranchiseModelId("1"))
-                .name("McDonalds")
+                .id(new FranchiseModelId(UseCaseTestConstants.ID_ONE))
+                .name(UseCaseTestConstants.FRANCHISE_NAME_MCDONALDS)
                 .build();
 
         when(franchiseModelRepository.create(any(FranchiseModel.class))).thenReturn(Mono.just(createdFranchise));
@@ -50,8 +52,8 @@ class CreateFranchiseUseCaseTest {
         StepVerifier.create(useCase.execute(inputFranchise))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("1", result.getId().value());
-                    assertEquals("McDonalds", result.getName());
+                    assertEquals(UseCaseTestConstants.ID_ONE, result.getId().value());
+                    assertEquals(UseCaseTestConstants.FRANCHISE_NAME_MCDONALDS, result.getName());
                 })
                 .verifyComplete();
 
@@ -62,12 +64,12 @@ class CreateFranchiseUseCaseTest {
     @DisplayName("Should trim franchise name before creating")
     void shouldTrimNameBeforeCreatingFranchise() {
         FranchiseModel inputFranchise = FranchiseModel.builder()
-                .name("  Burger King  ")
+                .name(UseCaseTestConstants.FRANCHISE_NAME_WITH_SPACES)
                 .build();
 
         FranchiseModel createdFranchise = FranchiseModel.builder()
-                .id(new FranchiseModelId("2"))
-                .name("Burger King")
+                .id(new FranchiseModelId(UseCaseTestConstants.ID_TWO))
+                .name(UseCaseTestConstants.FRANCHISE_NAME_BURGER_KING)
                 .build();
 
         when(franchiseModelRepository.create(any(FranchiseModel.class))).thenReturn(Mono.just(createdFranchise));
@@ -75,8 +77,8 @@ class CreateFranchiseUseCaseTest {
         StepVerifier.create(useCase.execute(inputFranchise))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("2", result.getId().value());
-                    assertEquals("Burger King", result.getName());
+                    assertEquals(UseCaseTestConstants.ID_TWO, result.getId().value());
+                    assertEquals(UseCaseTestConstants.FRANCHISE_NAME_BURGER_KING, result.getName());
                 })
                 .verifyComplete();
 
@@ -88,7 +90,7 @@ class CreateFranchiseUseCaseTest {
     void shouldEmitInvalidFranchiseNameExceptionWhenFranchiseIsNull() {
         StepVerifier.create(useCase.execute(null))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidFranchiseNameException
-                        && throwable.getMessage().contains("Franchise name cannot be empty or null"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.FRANCHISE_NAME_CANNOT_BE_EMPTY_OR_NULL))
                 .verify();
 
         verify(franchiseModelRepository, never()).create(any(FranchiseModel.class));
@@ -103,7 +105,7 @@ class CreateFranchiseUseCaseTest {
 
         StepVerifier.create(useCase.execute(inputFranchise))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidFranchiseNameException
-                        && throwable.getMessage().contains("Franchise name cannot be empty or null"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.FRANCHISE_NAME_CANNOT_BE_EMPTY_OR_NULL))
                 .verify();
 
         verify(franchiseModelRepository, never()).create(any(FranchiseModel.class));
@@ -113,12 +115,12 @@ class CreateFranchiseUseCaseTest {
     @DisplayName("Should emit InvalidFranchiseNameException when name is empty")
     void shouldEmitInvalidFranchiseNameExceptionWhenNameIsEmpty() {
         FranchiseModel inputFranchise = FranchiseModel.builder()
-                .name("")
+                .name(UseCaseTestConstants.EMPTY_STRING)
                 .build();
 
         StepVerifier.create(useCase.execute(inputFranchise))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidFranchiseNameException
-                        && throwable.getMessage().contains("Franchise name cannot be empty or null"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.FRANCHISE_NAME_CANNOT_BE_EMPTY_OR_NULL))
                 .verify();
 
         verify(franchiseModelRepository, never()).create(any(FranchiseModel.class));
@@ -128,12 +130,12 @@ class CreateFranchiseUseCaseTest {
     @DisplayName("Should emit InvalidFranchiseNameException when name is whitespace only")
     void shouldEmitInvalidFranchiseNameExceptionWhenNameIsWhitespaceOnly() {
         FranchiseModel inputFranchise = FranchiseModel.builder()
-                .name("   ")
+                .name(UseCaseTestConstants.WHITESPACE_STRING)
                 .build();
 
         StepVerifier.create(useCase.execute(inputFranchise))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidFranchiseNameException
-                        && throwable.getMessage().contains("Franchise name cannot be empty or null"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.FRANCHISE_NAME_CANNOT_BE_EMPTY_OR_NULL))
                 .verify();
 
         verify(franchiseModelRepository, never()).create(any(FranchiseModel.class));
@@ -143,15 +145,15 @@ class CreateFranchiseUseCaseTest {
     @DisplayName("Should propagate error when repository fails")
     void shouldPropagateErrorWhenRepositoryFails() {
         FranchiseModel inputFranchise = FranchiseModel.builder()
-                .name("KFC")
+                .name(UseCaseTestConstants.FRANCHISE_NAME_KFC)
                 .build();
 
         when(franchiseModelRepository.create(any(FranchiseModel.class)))
-                .thenReturn(Mono.error(new RuntimeException("Database error")));
+                .thenReturn(Mono.error(new RuntimeException(UseCaseTestConstants.DATABASE_ERROR_MSG)));
 
         StepVerifier.create(useCase.execute(inputFranchise))
                 .expectErrorMatches(throwable -> throwable instanceof RuntimeException
-                        && throwable.getMessage().equals("Database error"))
+                        && throwable.getMessage().equals(UseCaseTestConstants.DATABASE_ERROR_MSG))
                 .verify();
 
         verify(franchiseModelRepository).create(any(FranchiseModel.class));

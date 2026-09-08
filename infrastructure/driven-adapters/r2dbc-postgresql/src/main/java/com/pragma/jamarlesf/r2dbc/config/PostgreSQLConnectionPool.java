@@ -53,7 +53,7 @@ public class PostgreSQLConnectionPool {
         ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
         initializer.setConnectionFactory(connectionPool);
         CompositeDatabasePopulator populator = new CompositeDatabasePopulator();
-        populator.addPopulators(new ResourceDatabasePopulator(new ClassPathResource("schema.sql")));
+        populator.addPopulators(new ResourceDatabasePopulator(new ClassPathResource("db-schema.sql")));
         initializer.setDatabasePopulator(populator);
         return initializer;
     }

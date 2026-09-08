@@ -46,7 +46,7 @@ public class GlobalErrorWebExceptionHandler implements WebExceptionHandler {
         ErrorResponse errorBody = ErrorResponse.builder()
                 .status(status.value())
                 .error(resolveErrorType(ex))
-                .message(ex.getMessage() != null ? ex.getMessage() : "Unexpected error occurred")
+                .message(ex.getMessage() != null ? ex.getMessage() : ErrorTypeConstants.UNEXPECTED_ERROR)
                 .timestamp(Instant.now().toString())
                 .build();
 
@@ -81,23 +81,23 @@ public class GlobalErrorWebExceptionHandler implements WebExceptionHandler {
 
     private String resolveErrorType(Throwable ex) {
         if (ex instanceof FranchiseNotFoundException) {
-            return "FRANCHISE_NOT_FOUND";
+            return ErrorTypeConstants.FRANCHISE_NOT_FOUND;
         }
         if (ex instanceof BranchNotFoundException) {
-            return "BRANCH_NOT_FOUND";
+            return ErrorTypeConstants.BRANCH_NOT_FOUND;
         }
         if (ex instanceof ProductNotFoundException) {
-            return "PRODUCT_NOT_FOUND";
+            return ErrorTypeConstants.PRODUCT_NOT_FOUND;
         }
         if (ex instanceof InvalidFranchiseNameException
                 || ex instanceof InvalidBranchNameException
                 || ex instanceof InvalidProductNameException
                 || ex instanceof InvalidProductStockException) {
-            return "VALIDATION_ERROR";
+            return ErrorTypeConstants.VALIDATION_ERROR;
         }
         if (ex instanceof ServerWebInputException || ex instanceof DecodingException) {
-            return "MALFORMED_REQUEST";
+            return ErrorTypeConstants.MALFORMED_REQUEST;
         }
-        return "INTERNAL_SERVER_ERROR";
+        return ErrorTypeConstants.INTERNAL_SERVER_ERROR;
     }
 }

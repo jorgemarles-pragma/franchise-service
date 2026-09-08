@@ -3,11 +3,13 @@ package com.pragma.jamarlesf.usecase.deleteproductfrombranch;
 import com.pragma.jamarlesf.model.branchmodel.BranchModel;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.branchmodel.gateways.BranchModelRepository;
+import com.pragma.jamarlesf.model.constant.ErrorMessageConstants;
 import com.pragma.jamarlesf.model.exception.BranchNotFoundException;
 import com.pragma.jamarlesf.model.exception.ProductNotFoundException;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.model.productmodel.gateways.ProductModelRepository;
+import com.pragma.jamarlesf.usecase.constant.UseCaseTestConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,18 +43,18 @@ class DeleteProductFromBranchUseCaseTest {
     @Test
     @DisplayName("Should delete product successfully when branch and product exist and product belongs to branch")
     void shouldDeleteProductSuccessfullyWhenBranchAndProductExistAndBelongToBranch() {
-        BranchModelId branchId = new BranchModelId("10");
-        ProductModelId productId = new ProductModelId("100");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
+        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
 
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name("Sucursal Norte")
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
                 .build();
 
         ProductModel existingProduct = ProductModel.builder()
                 .id(productId)
-                .name("Hamburguesa Doble")
-                .stock(50)
+                .name(UseCaseTestConstants.PRODUCT_NAME_BURGER)
+                .stock(UseCaseTestConstants.STOCK_FIFTY)
                 .branchId(branchId)
                 .build();
 
@@ -71,14 +73,14 @@ class DeleteProductFromBranchUseCaseTest {
     @Test
     @DisplayName("Should emit BranchNotFoundException when branch does not exist")
     void shouldEmitBranchNotFoundExceptionWhenBranchDoesNotExist() {
-        BranchModelId branchId = new BranchModelId("999");
-        ProductModelId productId = new ProductModelId("100");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_NON_EXISTENT);
+        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
 
         when(branchModelRepository.findById(branchId)).thenReturn(Mono.empty());
 
         StepVerifier.create(useCase.execute(branchId, productId))
                 .expectErrorMatches(throwable -> throwable instanceof BranchNotFoundException
-                        && throwable.getMessage().contains("999"))
+                        && throwable.getMessage().contains(UseCaseTestConstants.ID_NON_EXISTENT))
                 .verify();
 
         verify(branchModelRepository).findById(branchId);
@@ -89,12 +91,12 @@ class DeleteProductFromBranchUseCaseTest {
     @Test
     @DisplayName("Should emit ProductNotFoundException when product does not exist")
     void shouldEmitProductNotFoundExceptionWhenProductDoesNotExist() {
-        BranchModelId branchId = new BranchModelId("10");
-        ProductModelId productId = new ProductModelId("999");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
+        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_NON_EXISTENT);
 
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name("Sucursal Norte")
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
                 .build();
 
         when(branchModelRepository.findById(branchId)).thenReturn(Mono.just(existingBranch));
@@ -102,7 +104,7 @@ class DeleteProductFromBranchUseCaseTest {
 
         StepVerifier.create(useCase.execute(branchId, productId))
                 .expectErrorMatches(throwable -> throwable instanceof ProductNotFoundException
-                        && throwable.getMessage().contains("999"))
+                        && throwable.getMessage().contains(UseCaseTestConstants.ID_NON_EXISTENT))
                 .verify();
 
         verify(branchModelRepository).findById(branchId);
@@ -113,19 +115,19 @@ class DeleteProductFromBranchUseCaseTest {
     @Test
     @DisplayName("Should emit ProductNotFoundException when product belongs to another branch")
     void shouldEmitProductNotFoundExceptionWhenProductBelongsToAnotherBranch() {
-        BranchModelId branchId = new BranchModelId("10");
-        BranchModelId otherBranchId = new BranchModelId("20");
-        ProductModelId productId = new ProductModelId("100");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
+        BranchModelId otherBranchId = new BranchModelId(UseCaseTestConstants.ID_TWENTY);
+        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
 
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name("Sucursal Norte")
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
                 .build();
 
         ProductModel productInOtherBranch = ProductModel.builder()
                 .id(productId)
-                .name("Hamburguesa Doble")
-                .stock(50)
+                .name(UseCaseTestConstants.PRODUCT_NAME_BURGER)
+                .stock(UseCaseTestConstants.STOCK_FIFTY)
                 .branchId(otherBranchId)
                 .build();
 
@@ -134,7 +136,7 @@ class DeleteProductFromBranchUseCaseTest {
 
         StepVerifier.create(useCase.execute(branchId, productId))
                 .expectErrorMatches(throwable -> throwable instanceof ProductNotFoundException
-                        && throwable.getMessage().contains("does not belong to the specified branch"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.PRODUCT_NOT_BELONG_TO_BRANCH))
                 .verify();
 
         verify(branchModelRepository).findById(branchId);
@@ -145,28 +147,28 @@ class DeleteProductFromBranchUseCaseTest {
     @Test
     @DisplayName("Should propagate error when database fails during deletion")
     void shouldPropagateErrorWhenDatabaseFailsDuringDeletion() {
-        BranchModelId branchId = new BranchModelId("10");
-        ProductModelId productId = new ProductModelId("100");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
+        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
 
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name("Sucursal Norte")
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
                 .build();
 
         ProductModel existingProduct = ProductModel.builder()
                 .id(productId)
-                .name("Hamburguesa Doble")
-                .stock(50)
+                .name(UseCaseTestConstants.PRODUCT_NAME_BURGER)
+                .stock(UseCaseTestConstants.STOCK_FIFTY)
                 .branchId(branchId)
                 .build();
 
         when(branchModelRepository.findById(branchId)).thenReturn(Mono.just(existingBranch));
         when(productModelRepository.findById(productId)).thenReturn(Mono.just(existingProduct));
-        when(productModelRepository.deleteById(productId)).thenReturn(Mono.error(new RuntimeException("Database error")));
+        when(productModelRepository.deleteById(productId)).thenReturn(Mono.error(new RuntimeException(UseCaseTestConstants.DATABASE_ERROR_MSG)));
 
         StepVerifier.create(useCase.execute(branchId, productId))
                 .expectErrorMatches(throwable -> throwable instanceof RuntimeException
-                        && throwable.getMessage().equals("Database error"))
+                        && throwable.getMessage().equals(UseCaseTestConstants.DATABASE_ERROR_MSG))
                 .verify();
 
         verify(branchModelRepository).findById(branchId);

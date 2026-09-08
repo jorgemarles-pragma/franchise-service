@@ -3,11 +3,13 @@ package com.pragma.jamarlesf.usecase.addproducttobranch;
 import com.pragma.jamarlesf.model.branchmodel.BranchModel;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.branchmodel.gateways.BranchModelRepository;
+import com.pragma.jamarlesf.model.constant.ErrorMessageConstants;
 import com.pragma.jamarlesf.model.exception.BranchNotFoundException;
 import com.pragma.jamarlesf.model.exception.InvalidProductStockException;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.model.productmodel.gateways.ProductModelRepository;
+import com.pragma.jamarlesf.usecase.constant.UseCaseTestConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,21 +45,21 @@ class AddProductToBranchUseCaseTest {
     @Test
     @DisplayName("Should add product successfully when branch exists")
     void shouldAddProductSuccessfullyWhenBranchExists() {
-        BranchModelId branchId = new BranchModelId("10");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name("Sucursal Norte")
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
                 .build();
 
         ProductModel inputProduct = ProductModel.builder()
-                .name("Hamburguesa Doble")
-                .stock(50)
+                .name(UseCaseTestConstants.PRODUCT_NAME_BURGER)
+                .stock(UseCaseTestConstants.STOCK_FIFTY)
                 .build();
 
         ProductModel createdProduct = ProductModel.builder()
-                .id(new ProductModelId("100"))
-                .name("Hamburguesa Doble")
-                .stock(50)
+                .id(new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED))
+                .name(UseCaseTestConstants.PRODUCT_NAME_BURGER)
+                .stock(UseCaseTestConstants.STOCK_FIFTY)
                 .branchId(branchId)
                 .build();
 
@@ -67,10 +69,10 @@ class AddProductToBranchUseCaseTest {
         StepVerifier.create(useCase.execute(branchId, inputProduct))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("100", result.getId().value());
-                    assertEquals("Hamburguesa Doble", result.getName());
-                    assertEquals(50, result.getStock());
-                    assertEquals("10", result.getBranchId().value());
+                    assertEquals(UseCaseTestConstants.ID_ONE_HUNDRED, result.getId().value());
+                    assertEquals(UseCaseTestConstants.PRODUCT_NAME_BURGER, result.getName());
+                    assertEquals(UseCaseTestConstants.STOCK_FIFTY, result.getStock());
+                    assertEquals(UseCaseTestConstants.ID_TEN, result.getBranchId().value());
                 })
                 .verifyComplete();
 
@@ -81,17 +83,17 @@ class AddProductToBranchUseCaseTest {
     @Test
     @DisplayName("Should emit BranchNotFoundException when branch does not exist")
     void shouldEmitBranchNotFoundExceptionWhenBranchDoesNotExist() {
-        BranchModelId branchId = new BranchModelId("999");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_NON_EXISTENT);
         ProductModel inputProduct = ProductModel.builder()
-                .name("Producto Huérfano")
-                .stock(10)
+                .name(UseCaseTestConstants.PRODUCT_NAME_FRIES)
+                .stock(UseCaseTestConstants.STOCK_TEN)
                 .build();
 
         when(branchModelRepository.findById(branchId)).thenReturn(Mono.empty());
 
         StepVerifier.create(useCase.execute(branchId, inputProduct))
                 .expectErrorMatches(throwable -> throwable instanceof BranchNotFoundException
-                        && throwable.getMessage().contains("999"))
+                        && throwable.getMessage().contains(UseCaseTestConstants.ID_NON_EXISTENT))
                 .verify();
 
         verify(branchModelRepository).findById(branchId);
@@ -101,15 +103,15 @@ class AddProductToBranchUseCaseTest {
     @Test
     @DisplayName("Should emit InvalidProductStockException when stock is negative")
     void shouldEmitInvalidProductStockExceptionWhenStockIsNegative() {
-        BranchModelId branchId = new BranchModelId("10");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
         ProductModel inputProduct = ProductModel.builder()
-                .name("Hamburguesa Doble")
-                .stock(-1)
+                .name(UseCaseTestConstants.PRODUCT_NAME_BURGER)
+                .stock(UseCaseTestConstants.STOCK_NEGATIVE)
                 .build();
 
         StepVerifier.create(useCase.execute(branchId, inputProduct))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidProductStockException
-                        && throwable.getMessage().contains("greater than or equal to 0"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.PRODUCT_STOCK_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO))
                 .verify();
 
         verify(branchModelRepository, never()).findById(any(BranchModelId.class));
@@ -119,14 +121,14 @@ class AddProductToBranchUseCaseTest {
     @Test
     @DisplayName("Should emit InvalidProductStockException when stock is null")
     void shouldEmitInvalidProductStockExceptionWhenStockIsNull() {
-        BranchModelId branchId = new BranchModelId("10");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
         ProductModel inputProduct = ProductModel.builder()
-                .name("Hamburguesa Doble")
+                .name(UseCaseTestConstants.PRODUCT_NAME_BURGER)
                 .stock(null)
                 .build();
 
         StepVerifier.create(useCase.execute(branchId, inputProduct))
-                .expectErrorMatches(throwable -> throwable instanceof InvalidProductStockException)
+                .expectError(InvalidProductStockException.class)
                 .verify();
 
         verify(branchModelRepository, never()).findById(any(BranchModelId.class));
@@ -136,21 +138,21 @@ class AddProductToBranchUseCaseTest {
     @Test
     @DisplayName("Should add product successfully when stock is zero")
     void shouldAddProductSuccessfullyWhenStockIsZero() {
-        BranchModelId branchId = new BranchModelId("10");
+        BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name("Sucursal Norte")
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
                 .build();
 
         ProductModel inputProduct = ProductModel.builder()
-                .name("Producto Sin Stock Inicial")
-                .stock(0)
+                .name(UseCaseTestConstants.PRODUCT_NAME_SODA)
+                .stock(UseCaseTestConstants.STOCK_ZERO)
                 .build();
 
         ProductModel createdProduct = ProductModel.builder()
-                .id(new ProductModelId("101"))
-                .name("Producto Sin Stock Inicial")
-                .stock(0)
+                .id(new ProductModelId(UseCaseTestConstants.ID_TWO))
+                .name(UseCaseTestConstants.PRODUCT_NAME_SODA)
+                .stock(UseCaseTestConstants.STOCK_ZERO)
                 .branchId(branchId)
                 .build();
 
@@ -160,8 +162,8 @@ class AddProductToBranchUseCaseTest {
         StepVerifier.create(useCase.execute(branchId, inputProduct))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("101", result.getId().value());
-                    assertEquals(0, result.getStock());
+                    assertEquals(UseCaseTestConstants.ID_TWO, result.getId().value());
+                    assertEquals(UseCaseTestConstants.STOCK_ZERO, result.getStock());
                 })
                 .verifyComplete();
 

@@ -9,6 +9,9 @@ spring:
     timeout-per-shutdown-phase: 20s
   devtools:
     add-properties: false
+  sql:
+    init:
+      mode: never
   h2:
     console:
       enabled: false

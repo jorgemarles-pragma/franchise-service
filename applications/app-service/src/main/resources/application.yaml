@@ -5,6 +5,9 @@ spring:
     name: "Franchise"
   devtools:
     add-properties: false
+  sql:
+    init:
+      mode: never
   h2:
     console:
       enabled: true

@@ -2,6 +2,7 @@ package com.pragma.jamarlesf.usecase.addproducttobranch;
 
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.branchmodel.gateways.BranchModelRepository;
+import com.pragma.jamarlesf.model.constant.ErrorMessageConstants;
 import com.pragma.jamarlesf.model.exception.BranchNotFoundException;
 import com.pragma.jamarlesf.model.exception.InvalidProductStockException;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
@@ -18,9 +19,9 @@ public class AddProductToBranchUseCase {
     public Mono<ProductModel> execute(BranchModelId branchId, ProductModel product) {
         return Mono.justOrEmpty(product)
                 .filter(p -> p.getStock() != null && p.getStock() >= 0)
-                .switchIfEmpty(Mono.error(new InvalidProductStockException("Product stock must be greater than or equal to 0")))
+                .switchIfEmpty(Mono.error(new InvalidProductStockException()))
                 .flatMap(validProduct -> branchModelRepository.findById(branchId))
-                .switchIfEmpty(Mono.error(new BranchNotFoundException(branchId.value())))
+                .switchIfEmpty(Mono.error(new BranchNotFoundException(branchId != null ? branchId.value() : ErrorMessageConstants.NULL_ID_VALUE)))
                 .map(branch -> product.toBuilder()
                         .branchId(branch.getId())
                         .build())

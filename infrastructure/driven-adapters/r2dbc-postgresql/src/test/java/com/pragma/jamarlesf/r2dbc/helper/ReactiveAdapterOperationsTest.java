@@ -12,6 +12,11 @@ import reactor.test.StepVerifier;
 
 import java.util.Objects;
 
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_ONE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_TWO;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.TEST_NAME;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.TEST_NAME_ONE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.TEST_NAME_TWO;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
@@ -32,8 +37,8 @@ class ReactiveAdapterOperationsTest {
 
     @Test
     void save() {
-        DummyEntity entity = new DummyEntity("1", "test");
-        DummyData data = new DummyData("1", "test");
+        DummyEntity entity = new DummyEntity(ID_ONE, TEST_NAME);
+        DummyData data = new DummyData(ID_ONE, TEST_NAME);
 
         when(mapper.map(entity, DummyData.class)).thenReturn(data);
         when(repository.save(data)).thenReturn(Mono.just(data));
@@ -45,10 +50,10 @@ class ReactiveAdapterOperationsTest {
 
     @Test
     void saveAllEntities() {
-        DummyEntity entity1 = new DummyEntity("1", "test1");
-        DummyEntity entity2 = new DummyEntity("2", "test2");
-        DummyData data1 = new DummyData("1", "test1");
-        DummyData data2 = new DummyData("2", "test2");
+        DummyEntity entity1 = new DummyEntity(ID_ONE, TEST_NAME_ONE);
+        DummyEntity entity2 = new DummyEntity(ID_TWO, TEST_NAME_TWO);
+        DummyData data1 = new DummyData(ID_ONE, TEST_NAME_ONE);
+        DummyData data2 = new DummyData(ID_TWO, TEST_NAME_TWO);
 
         when(mapper.map(entity1, DummyData.class)).thenReturn(data1);
         when(mapper.map(entity2, DummyData.class)).thenReturn(data2);
@@ -61,20 +66,20 @@ class ReactiveAdapterOperationsTest {
 
     @Test
     void findById() {
-        DummyData data = new DummyData("1", "test");
-        DummyEntity entity = new DummyEntity("1", "test");
+        DummyData data = new DummyData(ID_ONE, TEST_NAME);
+        DummyEntity entity = new DummyEntity(ID_ONE, TEST_NAME);
 
-        when(repository.findById("1")).thenReturn(Mono.just(data));
+        when(repository.findById(ID_ONE)).thenReturn(Mono.just(data));
 
-        StepVerifier.create(operations.findById("1"))
+        StepVerifier.create(operations.findById(ID_ONE))
                 .expectNext(entity)
                 .verifyComplete();
     }
 
     @Test
     void findByExample() {
-        DummyEntity entity = new DummyEntity("1", "test");
-        DummyData data = new DummyData("1", "test");
+        DummyEntity entity = new DummyEntity(ID_ONE, TEST_NAME);
+        DummyData data = new DummyData(ID_ONE, TEST_NAME);
 
         when(mapper.map(entity, DummyData.class)).thenReturn(data);
         when(repository.findAll(any(Example.class))).thenReturn(Flux.just(data));
@@ -86,10 +91,10 @@ class ReactiveAdapterOperationsTest {
 
     @Test
     void findAll() {
-        DummyData data1 = new DummyData("1", "test1");
-        DummyData data2 = new DummyData("2", "test2");
-        DummyEntity entity1 = new DummyEntity("1", "test1");
-        DummyEntity entity2 = new DummyEntity("2", "test2");
+        DummyData data1 = new DummyData(ID_ONE, TEST_NAME_ONE);
+        DummyData data2 = new DummyData(ID_TWO, TEST_NAME_TWO);
+        DummyEntity entity1 = new DummyEntity(ID_ONE, TEST_NAME_ONE);
+        DummyEntity entity2 = new DummyEntity(ID_TWO, TEST_NAME_TWO);
 
         when(repository.findAll()).thenReturn(Flux.just(data1, data2));
 
