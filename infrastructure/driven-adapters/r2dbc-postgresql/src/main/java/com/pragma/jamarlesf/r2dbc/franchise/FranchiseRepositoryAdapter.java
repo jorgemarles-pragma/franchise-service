@@ -34,7 +34,7 @@ public class FranchiseRepositoryAdapter
     public Mono<FranchiseModel> findById(FranchiseModelId id) {
         return Mono.justOrEmpty(id)
                 .map(FranchiseModelId::value)
-                .filter(val -> val != null && !val.isBlank())
+                .filter(val -> !val.isBlank())
                 .map(Long::valueOf)
                 .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
                 .flatMap(this::findById);
