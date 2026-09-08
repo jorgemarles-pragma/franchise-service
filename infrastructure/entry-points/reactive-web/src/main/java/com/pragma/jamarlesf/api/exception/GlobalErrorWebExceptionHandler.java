@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.ServerWebInputException;
 import org.springframework.web.server.WebExceptionHandler;
@@ -76,6 +77,9 @@ public class GlobalErrorWebExceptionHandler implements WebExceptionHandler {
                 || ex instanceof DecodingException) {
             return HttpStatus.BAD_REQUEST;
         }
+        if (ex instanceof ResponseStatusException responseStatusException) {
+            return responseStatusException.getStatusCode();
+        }
         return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
@@ -97,6 +101,10 @@ public class GlobalErrorWebExceptionHandler implements WebExceptionHandler {
         }
         if (ex instanceof ServerWebInputException || ex instanceof DecodingException) {
             return ErrorTypeConstants.MALFORMED_REQUEST;
+        }
+        if (ex instanceof ResponseStatusException responseStatusException
+                && responseStatusException.getStatusCode() == HttpStatus.NOT_FOUND) {
+            return ErrorTypeConstants.RESOURCE_NOT_FOUND;
         }
         return ErrorTypeConstants.INTERNAL_SERVER_ERROR;
     }
