@@ -8,6 +8,7 @@ import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.usecase.addproducttobranch.AddProductToBranchUseCase;
+import com.pragma.jamarlesf.usecase.deleteproductfrombranch.DeleteProductFromBranchUseCase;
 import com.pragma.jamarlesf.usecase.gethigheststockproductsbyfranchise.GetHighestStockProductsByFranchiseUseCase;
 import com.pragma.jamarlesf.usecase.modifyproductstock.ModifyProductStockUseCase;
 import com.pragma.jamarlesf.usecase.updateproductname.UpdateProductNameUseCase;
@@ -47,13 +48,16 @@ class ProductHandlerTest {
     private UpdateProductNameUseCase updateProductNameUseCase;
 
     @Mock
+    private DeleteProductFromBranchUseCase deleteProductFromBranchUseCase;
+
+    @Mock
     private ServerRequest serverRequest;
 
     private ProductHandler productHandler;
 
     @BeforeEach
     void setUp() {
-        productHandler = new ProductHandler(addProductToBranchUseCase, modifyProductStockUseCase, getHighestStockProductsByFranchiseUseCase, updateProductNameUseCase);
+        productHandler = new ProductHandler(addProductToBranchUseCase, modifyProductStockUseCase, getHighestStockProductsByFranchiseUseCase, updateProductNameUseCase, deleteProductFromBranchUseCase);
     }
 
 
@@ -216,6 +220,48 @@ class ProductHandlerTest {
         verify(serverRequest).pathVariable("productId");
         verify(serverRequest).bodyToMono(UpdateProductNameRequest.class);
         verify(updateProductNameUseCase).execute(eq(new ProductModelId("100")), eq("Hamburguesa Doble Carne"));
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 204 when product is deleted successfully")
+    void shouldReturn204WhenProductIsDeletedSuccessfully() {
+        when(serverRequest.pathVariable("branchId")).thenReturn("10");
+        when(serverRequest.pathVariable("productId")).thenReturn("100");
+        when(deleteProductFromBranchUseCase.execute(eq(new BranchModelId("10")), eq(new ProductModelId("100"))))
+                .thenReturn(Mono.empty());
+
+        Mono<ServerResponse> responseMono = productHandler.deleteProduct(serverRequest);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(HttpStatus.NO_CONTENT, response.statusCode());
+                })
+                .verifyComplete();
+
+        verify(serverRequest).pathVariable("branchId");
+        verify(serverRequest).pathVariable("productId");
+        verify(deleteProductFromBranchUseCase).execute(eq(new BranchModelId("10")), eq(new ProductModelId("100")));
+    }
+
+    @Test
+    @DisplayName("Should propagate error when delete product fails")
+    void shouldPropagateErrorWhenDeleteProductFails() {
+        when(serverRequest.pathVariable("branchId")).thenReturn("10");
+        when(serverRequest.pathVariable("productId")).thenReturn("100");
+        when(deleteProductFromBranchUseCase.execute(eq(new BranchModelId("10")), eq(new ProductModelId("100"))))
+                .thenReturn(Mono.error(new RuntimeException("Product deletion failed")));
+
+        Mono<ServerResponse> responseMono = productHandler.deleteProduct(serverRequest);
+
+        StepVerifier.create(responseMono)
+                .expectErrorMatches(error -> error instanceof RuntimeException
+                        && error.getMessage().equals("Product deletion failed"))
+                .verify();
+
+        verify(serverRequest).pathVariable("branchId");
+        verify(serverRequest).pathVariable("productId");
+        verify(deleteProductFromBranchUseCase).execute(eq(new BranchModelId("10")), eq(new ProductModelId("100")));
     }
 }
 

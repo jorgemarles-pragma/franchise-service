@@ -11,4 +11,5 @@ public interface ProductModelRepository {
     Mono<ProductModel> findById(ProductModelId id);
     Mono<ProductModel> update(ProductModel product);
     Flux<ProductModel> findHighestStockByFranchiseId(FranchiseModelId franchiseId);
+    Mono<Void> deleteById(ProductModelId id);
 }

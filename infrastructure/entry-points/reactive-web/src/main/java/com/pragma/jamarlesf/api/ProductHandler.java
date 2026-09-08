@@ -9,6 +9,7 @@ import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.usecase.addproducttobranch.AddProductToBranchUseCase;
+import com.pragma.jamarlesf.usecase.deleteproductfrombranch.DeleteProductFromBranchUseCase;
 import com.pragma.jamarlesf.usecase.gethigheststockproductsbyfranchise.GetHighestStockProductsByFranchiseUseCase;
 import com.pragma.jamarlesf.usecase.modifyproductstock.ModifyProductStockUseCase;
 import com.pragma.jamarlesf.usecase.updateproductname.UpdateProductNameUseCase;
@@ -28,6 +29,7 @@ public class ProductHandler {
     private final ModifyProductStockUseCase modifyProductStockUseCase;
     private final GetHighestStockProductsByFranchiseUseCase getHighestStockProductsByFranchiseUseCase;
     private final UpdateProductNameUseCase updateProductNameUseCase;
+    private final DeleteProductFromBranchUseCase deleteProductFromBranchUseCase;
 
 
     public Mono<ServerResponse> addProduct(ServerRequest request) {
@@ -93,6 +95,13 @@ public class ProductHandler {
                 .flatMap(response -> ServerResponse
                         .ok()
                         .bodyValue(response));
+    }
+
+    public Mono<ServerResponse> deleteProduct(ServerRequest request) {
+        String branchId = request.pathVariable("branchId");
+        String productId = request.pathVariable("productId");
+        return deleteProductFromBranchUseCase.execute(new BranchModelId(branchId), new ProductModelId(productId))
+                .then(ServerResponse.noContent().build());
     }
 }
 
