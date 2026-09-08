@@ -33,7 +33,6 @@ module "rds" {
   security_group_ids = [module.security.rds_security_group_id]
   db_name            = var.db_name
   db_user            = var.db_user
-  db_password        = var.db_password
   instance_class     = var.db_instance_class
 }
 
@@ -46,7 +45,7 @@ module "secrets" {
   db_port      = module.rds.port
   db_name      = var.db_name
   db_user      = var.db_user
-  db_password  = var.db_password
+  db_password  = module.rds.password
 }
 
 module "alb" {
