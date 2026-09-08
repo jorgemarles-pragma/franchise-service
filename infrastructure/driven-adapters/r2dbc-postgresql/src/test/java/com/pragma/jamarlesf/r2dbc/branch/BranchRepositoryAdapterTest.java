@@ -1,6 +1,7 @@
 package com.pragma.jamarlesf.r2dbc.branch;
 
 import com.pragma.jamarlesf.model.branchmodel.BranchModel;
+import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,5 +82,43 @@ class BranchRepositoryAdapterTest {
                 .verify();
 
         verify(repository).save(any(BranchData.class));
+    }
+
+    @Test
+    void mustFindBranchByIdSuccessfully() {
+        BranchData foundData = BranchData.builder()
+                .id(10L)
+                .name("Sucursal Existente")
+                .franchiseId(1L)
+                .build();
+
+        when(repository.findById(10L)).thenReturn(Mono.just(foundData));
+
+        StepVerifier.create(adapter.findById(new BranchModelId("10")))
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals("10", result.getId().value());
+                    assertEquals("Sucursal Existente", result.getName());
+                    assertEquals("1", result.getFranchiseId().value());
+                })
+                .verifyComplete();
+
+        verify(repository).findById(10L);
+    }
+
+    @Test
+    void mustReturnEmptyWhenBranchNotFound() {
+        when(repository.findById(999L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(adapter.findById(new BranchModelId("999")))
+                .verifyComplete();
+
+        verify(repository).findById(999L);
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdIsNull() {
+        StepVerifier.create(adapter.findById((BranchModelId) null))
+                .verifyComplete();
     }
 }

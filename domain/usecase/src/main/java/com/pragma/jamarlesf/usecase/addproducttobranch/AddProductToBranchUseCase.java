@@ -1,0 +1,25 @@
+package com.pragma.jamarlesf.usecase.addproducttobranch;
+
+import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
+import com.pragma.jamarlesf.model.branchmodel.gateways.BranchModelRepository;
+import com.pragma.jamarlesf.model.exception.BranchNotFoundException;
+import com.pragma.jamarlesf.model.productmodel.ProductModel;
+import com.pragma.jamarlesf.model.productmodel.gateways.ProductModelRepository;
+import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
+
+@RequiredArgsConstructor
+public class AddProductToBranchUseCase {
+
+    private final BranchModelRepository branchModelRepository;
+    private final ProductModelRepository productModelRepository;
+
+    public Mono<ProductModel> execute(BranchModelId branchId, ProductModel product) {
+        return branchModelRepository.findById(branchId)
+                .switchIfEmpty(Mono.error(new BranchNotFoundException(branchId.value())))
+                .map(branch -> product.toBuilder()
+                        .branchId(branch.getId())
+                        .build())
+                .flatMap(productModelRepository::create);
+    }
+}

@@ -1,0 +1,31 @@
+package com.pragma.jamarlesf.r2dbc.product;
+
+import com.pragma.jamarlesf.model.productmodel.ProductModel;
+import com.pragma.jamarlesf.model.productmodel.gateways.ProductModelRepository;
+import com.pragma.jamarlesf.r2dbc.helper.ReactiveAdapterOperations;
+import org.reactivecommons.utils.ObjectMapper;
+import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Mono;
+
+@Repository
+public class ProductRepositoryAdapter
+        extends ReactiveAdapterOperations<ProductModel, ProductData, Long, ProductReactiveRepository>
+        implements ProductModelRepository {
+
+    private final ProductMapper productMapper;
+
+    public ProductRepositoryAdapter(ProductReactiveRepository repository, ObjectMapper mapper, ProductMapper productMapper) {
+        super(repository, mapper, productMapper::toModel);
+        this.productMapper = productMapper;
+    }
+
+    @Override
+    protected ProductData toData(ProductModel model) {
+        return productMapper.toData(model);
+    }
+
+    @Override
+    public Mono<ProductModel> create(ProductModel product) {
+        return this.save(product);
+    }
+}

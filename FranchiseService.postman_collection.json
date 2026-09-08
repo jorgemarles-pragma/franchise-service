@@ -69,6 +69,40 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "3. Productos",
+			"item": [
+				{
+					"name": "Agregar Producto a Sucursal",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Hamburguesa Doble\",\n    \"stock\": 50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/branches/1/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"branches",
+								"1",
+								"products"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
