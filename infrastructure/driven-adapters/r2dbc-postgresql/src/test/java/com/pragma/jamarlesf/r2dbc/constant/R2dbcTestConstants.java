@@ -23,13 +23,13 @@ public final class R2dbcTestConstants {
     public static final String ID_NON_NUMERIC = "xyz";
 
     // Names
-    public static final String FRANCHISE_NAME_DEFAULT = "Franquicia Nequi";
-    public static final String FRANCHISE_NAME_UPDATED = "Franquicia Nequi Updated";
-    public static final String BRANCH_NAME_DEFAULT = "Sucursal Medellín";
-    public static final String BRANCH_NAME_UPDATED = "Sucursal Medellín Updated";
-    public static final String PRODUCT_NAME_DEFAULT = "Hamburguesa Especial";
-    public static final String PRODUCT_NAME_UPDATED = "Hamburguesa Especial Updated";
-    public static final String PRODUCT_NAME_FRIES = "Papas Supremas";
+    public static final String FRANCHISE_NAME_DEFAULT = "Main Franchise";
+    public static final String FRANCHISE_NAME_UPDATED = "Main Franchise Updated";
+    public static final String BRANCH_NAME_DEFAULT = "Downtown Branch";
+    public static final String BRANCH_NAME_UPDATED = "Downtown Branch Updated";
+    public static final String PRODUCT_NAME_DEFAULT = "Special Burger";
+    public static final String PRODUCT_NAME_UPDATED = "Special Burger Updated";
+    public static final String PRODUCT_NAME_FRIES = "Supreme Fries";
 
     // Stock
     public static final int STOCK_FIVE = 5;

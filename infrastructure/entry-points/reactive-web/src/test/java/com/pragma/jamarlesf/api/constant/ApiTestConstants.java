@@ -13,11 +13,11 @@ public final class ApiTestConstants {
     // Names
     public static final String FRANCHISE_NAME_DEFAULT = "McDonalds";
     public static final String FRANCHISE_NAME_UPDATED = "McDonalds Colombia";
-    public static final String BRANCH_NAME_DEFAULT = "Sucursal Norte";
-    public static final String BRANCH_NAME_UPDATED = "Sucursal Poblado";
-    public static final String PRODUCT_NAME_DEFAULT = "Hamburguesa Doble";
-    public static final String PRODUCT_NAME_UPDATED = "Hamburguesa Triple";
-    public static final String PRODUCT_NAME_FRIES = "Papas Medianas";
+    public static final String BRANCH_NAME_DEFAULT = "North Branch";
+    public static final String BRANCH_NAME_UPDATED = "South Branch";
+    public static final String PRODUCT_NAME_DEFAULT = "Double Burger";
+    public static final String PRODUCT_NAME_UPDATED = "Triple Burger";
+    public static final String PRODUCT_NAME_FRIES = "Medium Fries";
 
     // Numbers
     public static final int STOCK_FIFTY = 50;

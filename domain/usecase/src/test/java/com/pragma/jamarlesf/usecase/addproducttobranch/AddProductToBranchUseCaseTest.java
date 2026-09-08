@@ -48,7 +48,7 @@ class AddProductToBranchUseCaseTest {
         BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTH)
                 .build();
 
         ProductModel inputProduct = ProductModel.builder()
@@ -141,7 +141,7 @@ class AddProductToBranchUseCaseTest {
         BranchModelId branchId = new BranchModelId(UseCaseTestConstants.ID_TEN);
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTH)
                 .build();
 
         ProductModel inputProduct = ProductModel.builder()
