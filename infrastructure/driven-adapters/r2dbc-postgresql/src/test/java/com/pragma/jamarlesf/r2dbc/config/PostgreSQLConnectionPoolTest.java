@@ -7,6 +7,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.DB_DATABASE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.DB_HOST;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.DB_PASSWORD;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.DB_PORT;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.DB_SCHEMA;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.DB_USERNAME;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -24,12 +30,12 @@ class PostgreSQLConnectionPoolTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        when(properties.host()).thenReturn("localhost");
-        when(properties.port()).thenReturn(5432);
-        when(properties.database()).thenReturn("dbName");
-        when(properties.schema()).thenReturn("schema");
-        when(properties.username()).thenReturn("username");
-        when(properties.password()).thenReturn("password");
+        when(properties.host()).thenReturn(DB_HOST);
+        when(properties.port()).thenReturn(DB_PORT);
+        when(properties.database()).thenReturn(DB_DATABASE);
+        when(properties.schema()).thenReturn(DB_SCHEMA);
+        when(properties.username()).thenReturn(DB_USERNAME);
+        when(properties.password()).thenReturn(DB_PASSWORD);
     }
 
     @Test

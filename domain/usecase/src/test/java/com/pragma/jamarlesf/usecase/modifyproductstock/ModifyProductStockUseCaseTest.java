@@ -1,11 +1,13 @@
 package com.pragma.jamarlesf.usecase.modifyproductstock;
 
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
+import com.pragma.jamarlesf.model.constant.ErrorMessageConstants;
 import com.pragma.jamarlesf.model.exception.InvalidProductStockException;
 import com.pragma.jamarlesf.model.exception.ProductNotFoundException;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.model.productmodel.gateways.ProductModelRepository;
+import com.pragma.jamarlesf.usecase.constant.UseCaseTestConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,14 +40,14 @@ class ModifyProductStockUseCaseTest {
     @Test
     @DisplayName("Should modify product stock successfully when product exists and stock is positive")
     void shouldModifyStockSuccessfullyWhenProductExistsAndStockIsValid() {
-        ProductModelId productId = new ProductModelId("100");
-        Integer newStock = 75;
+        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
+        Integer newStock = UseCaseTestConstants.STOCK_ONE_HUNDRED;
 
         ProductModel existingProduct = ProductModel.builder()
                 .id(productId)
-                .name("Hamburguesa Doble")
-                .stock(50)
-                .branchId(new BranchModelId("10"))
+                .name(UseCaseTestConstants.PRODUCT_NAME_BURGER)
+                .stock(UseCaseTestConstants.STOCK_FIFTY)
+                .branchId(new BranchModelId(UseCaseTestConstants.ID_TEN))
                 .build();
 
         ProductModel updatedProduct = existingProduct.toBuilder()
@@ -58,10 +60,10 @@ class ModifyProductStockUseCaseTest {
         StepVerifier.create(useCase.execute(productId, newStock))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("100", result.getId().value());
-                    assertEquals("Hamburguesa Doble", result.getName());
-                    assertEquals(75, result.getStock());
-                    assertEquals("10", result.getBranchId().value());
+                    assertEquals(UseCaseTestConstants.ID_ONE_HUNDRED, result.getId().value());
+                    assertEquals(UseCaseTestConstants.PRODUCT_NAME_BURGER, result.getName());
+                    assertEquals(UseCaseTestConstants.STOCK_ONE_HUNDRED, result.getStock());
+                    assertEquals(UseCaseTestConstants.ID_TEN, result.getBranchId().value());
                 })
                 .verifyComplete();
 
@@ -72,18 +74,18 @@ class ModifyProductStockUseCaseTest {
     @Test
     @DisplayName("Should modify product stock successfully when new stock is zero")
     void shouldModifyStockSuccessfullyWhenStockIsZero() {
-        ProductModelId productId = new ProductModelId("100");
-        Integer newStock = 0;
+        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
+        Integer newStock = UseCaseTestConstants.STOCK_ZERO;
 
         ProductModel existingProduct = ProductModel.builder()
                 .id(productId)
-                .name("Hamburguesa Doble")
-                .stock(50)
-                .branchId(new BranchModelId("10"))
+                .name(UseCaseTestConstants.PRODUCT_NAME_BURGER)
+                .stock(UseCaseTestConstants.STOCK_FIFTY)
+                .branchId(new BranchModelId(UseCaseTestConstants.ID_TEN))
                 .build();
 
         ProductModel updatedProduct = existingProduct.toBuilder()
-                .stock(0)
+                .stock(UseCaseTestConstants.STOCK_ZERO)
                 .build();
 
         when(productModelRepository.findById(productId)).thenReturn(Mono.just(existingProduct));
@@ -92,8 +94,8 @@ class ModifyProductStockUseCaseTest {
         StepVerifier.create(useCase.execute(productId, newStock))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("100", result.getId().value());
-                    assertEquals(0, result.getStock());
+                    assertEquals(UseCaseTestConstants.ID_ONE_HUNDRED, result.getId().value());
+                    assertEquals(UseCaseTestConstants.STOCK_ZERO, result.getStock());
                 })
                 .verifyComplete();
 
@@ -104,12 +106,12 @@ class ModifyProductStockUseCaseTest {
     @Test
     @DisplayName("Should emit InvalidProductStockException when new stock is negative")
     void shouldEmitInvalidProductStockExceptionWhenStockIsNegative() {
-        ProductModelId productId = new ProductModelId("100");
-        Integer newStock = -5;
+        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
+        Integer newStock = UseCaseTestConstants.STOCK_NEGATIVE;
 
         StepVerifier.create(useCase.execute(productId, newStock))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidProductStockException
-                        && throwable.getMessage().contains("greater than or equal to 0"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.PRODUCT_STOCK_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO))
                 .verify();
 
         verify(productModelRepository, never()).findById(any(ProductModelId.class));
@@ -119,11 +121,11 @@ class ModifyProductStockUseCaseTest {
     @Test
     @DisplayName("Should emit InvalidProductStockException when new stock is null")
     void shouldEmitInvalidProductStockExceptionWhenStockIsNull() {
-        ProductModelId productId = new ProductModelId("100");
+        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED);
 
         StepVerifier.create(useCase.execute(productId, null))
                 .expectErrorMatches(throwable -> throwable instanceof InvalidProductStockException
-                        && throwable.getMessage().contains("greater than or equal to 0"))
+                        && throwable.getMessage().contains(ErrorMessageConstants.PRODUCT_STOCK_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO))
                 .verify();
 
         verify(productModelRepository, never()).findById(any(ProductModelId.class));
@@ -133,14 +135,14 @@ class ModifyProductStockUseCaseTest {
     @Test
     @DisplayName("Should emit ProductNotFoundException when product does not exist")
     void shouldEmitProductNotFoundExceptionWhenProductDoesNotExist() {
-        ProductModelId productId = new ProductModelId("999");
-        Integer newStock = 20;
+        ProductModelId productId = new ProductModelId(UseCaseTestConstants.ID_NON_EXISTENT);
+        Integer newStock = UseCaseTestConstants.STOCK_TWENTY;
 
         when(productModelRepository.findById(productId)).thenReturn(Mono.empty());
 
         StepVerifier.create(useCase.execute(productId, newStock))
                 .expectErrorMatches(throwable -> throwable instanceof ProductNotFoundException
-                        && throwable.getMessage().contains("999"))
+                        && throwable.getMessage().contains(UseCaseTestConstants.ID_NON_EXISTENT))
                 .verify();
 
         verify(productModelRepository).findById(productId);

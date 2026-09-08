@@ -1,5 +1,6 @@
 package com.pragma.jamarlesf.api;
 
+import com.pragma.jamarlesf.api.constant.ApiTestConstants;
 import com.pragma.jamarlesf.api.dto.request.BranchRequest;
 import com.pragma.jamarlesf.api.dto.request.UpdateBranchNameRequest;
 import com.pragma.jamarlesf.model.branchmodel.BranchModel;
@@ -19,6 +20,8 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_BRANCH_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,16 +51,16 @@ class BranchHandlerTest {
     @Test
     @DisplayName("Should return HTTP 201 when branch is created successfully")
     void shouldReturn201WhenBranchIsCreatedSuccessfully() {
-        BranchRequest requestDto = new BranchRequest("Sucursal Norte");
+        BranchRequest requestDto = new BranchRequest(ApiTestConstants.BRANCH_NAME_DEFAULT);
         BranchModel createdBranch = BranchModel.builder()
-                .id(new BranchModelId("10"))
-                .name("Sucursal Norte")
-                .franchiseId(new FranchiseModelId("1"))
+                .id(new BranchModelId(ApiTestConstants.ID_TEN))
+                .name(ApiTestConstants.BRANCH_NAME_DEFAULT)
+                .franchiseId(new FranchiseModelId(ApiTestConstants.ID_ONE))
                 .build();
 
-        when(serverRequest.pathVariable("franchiseId")).thenReturn("1");
+        when(serverRequest.pathVariable(PATH_VAR_FRANCHISE_ID)).thenReturn(ApiTestConstants.ID_ONE);
         when(serverRequest.bodyToMono(BranchRequest.class)).thenReturn(Mono.just(requestDto));
-        when(addBranchToFranchiseUseCase.execute(eq(new FranchiseModelId("1")), any(BranchModel.class)))
+        when(addBranchToFranchiseUseCase.execute(eq(new FranchiseModelId(ApiTestConstants.ID_ONE)), any(BranchModel.class)))
                 .thenReturn(Mono.just(createdBranch));
 
         Mono<ServerResponse> responseMono = branchHandler.addBranch(serverRequest);
@@ -69,24 +72,24 @@ class BranchHandlerTest {
                 })
                 .verifyComplete();
 
-        verify(serverRequest).pathVariable("franchiseId");
+        verify(serverRequest).pathVariable(PATH_VAR_FRANCHISE_ID);
         verify(serverRequest).bodyToMono(BranchRequest.class);
-        verify(addBranchToFranchiseUseCase).execute(eq(new FranchiseModelId("1")), any(BranchModel.class));
+        verify(addBranchToFranchiseUseCase).execute(eq(new FranchiseModelId(ApiTestConstants.ID_ONE)), any(BranchModel.class));
     }
 
     @Test
     @DisplayName("Should return HTTP 200 when branch name is updated successfully")
     void shouldReturn200WhenBranchNameIsUpdatedSuccessfully() {
-        UpdateBranchNameRequest requestDto = new UpdateBranchNameRequest("Sucursal Poblado");
+        UpdateBranchNameRequest requestDto = new UpdateBranchNameRequest(ApiTestConstants.BRANCH_NAME_UPDATED);
         BranchModel updatedBranch = BranchModel.builder()
-                .id(new BranchModelId("10"))
-                .name("Sucursal Poblado")
-                .franchiseId(new FranchiseModelId("1"))
+                .id(new BranchModelId(ApiTestConstants.ID_TEN))
+                .name(ApiTestConstants.BRANCH_NAME_UPDATED)
+                .franchiseId(new FranchiseModelId(ApiTestConstants.ID_ONE))
                 .build();
 
-        when(serverRequest.pathVariable("branchId")).thenReturn("10");
+        when(serverRequest.pathVariable(PATH_VAR_BRANCH_ID)).thenReturn(ApiTestConstants.ID_TEN);
         when(serverRequest.bodyToMono(UpdateBranchNameRequest.class)).thenReturn(Mono.just(requestDto));
-        when(updateBranchNameUseCase.execute(eq(new BranchModelId("10")), eq("Sucursal Poblado")))
+        when(updateBranchNameUseCase.execute(eq(new BranchModelId(ApiTestConstants.ID_TEN)), eq(ApiTestConstants.BRANCH_NAME_UPDATED)))
                 .thenReturn(Mono.just(updatedBranch));
 
         Mono<ServerResponse> responseMono = branchHandler.updateBranchName(serverRequest);
@@ -98,8 +101,8 @@ class BranchHandlerTest {
                 })
                 .verifyComplete();
 
-        verify(serverRequest).pathVariable("branchId");
+        verify(serverRequest).pathVariable(PATH_VAR_BRANCH_ID);
         verify(serverRequest).bodyToMono(UpdateBranchNameRequest.class);
-        verify(updateBranchNameUseCase).execute(eq(new BranchModelId("10")), eq("Sucursal Poblado"));
+        verify(updateBranchNameUseCase).execute(eq(new BranchModelId(ApiTestConstants.ID_TEN)), eq(ApiTestConstants.BRANCH_NAME_UPDATED));
     }
 }

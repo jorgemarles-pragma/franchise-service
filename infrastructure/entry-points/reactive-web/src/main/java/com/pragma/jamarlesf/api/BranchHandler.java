@@ -15,6 +15,9 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_BRANCH_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
+
 @Component
 @RequiredArgsConstructor
 public class BranchHandler {
@@ -23,7 +26,7 @@ public class BranchHandler {
     private final UpdateBranchNameUseCase updateBranchNameUseCase;
 
     public Mono<ServerResponse> addBranch(ServerRequest request) {
-        String franchiseId = request.pathVariable("franchiseId");
+        String franchiseId = request.pathVariable(PATH_VAR_FRANCHISE_ID);
         return request.bodyToMono(BranchRequest.class)
                 .map(req -> BranchModel.builder()
                         .name(req.name())
@@ -40,7 +43,7 @@ public class BranchHandler {
     }
 
     public Mono<ServerResponse> updateBranchName(ServerRequest request) {
-        String branchId = request.pathVariable("branchId");
+        String branchId = request.pathVariable(PATH_VAR_BRANCH_ID);
         return request.bodyToMono(UpdateBranchNameRequest.class)
                 .flatMap(req -> updateBranchNameUseCase.execute(new BranchModelId(branchId), req.name()))
                 .map(updatedBranch -> BranchResponse.builder()

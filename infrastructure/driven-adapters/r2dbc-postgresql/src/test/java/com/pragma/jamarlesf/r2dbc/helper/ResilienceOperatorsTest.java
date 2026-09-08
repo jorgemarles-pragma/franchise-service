@@ -22,6 +22,17 @@ import reactor.test.StepVerifier;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ERROR_DB_CONNECTION_LOST;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ERROR_FATAL_DB;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.RESILIENCE_CB_NAME;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.RESILIENCE_RETRY_NAME;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.RESILIENCE_TL_NAME;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.TEST_DATA;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.TEST_ITEM_1;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.TEST_ITEM_2;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.TEST_LATE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.TEST_RECOVERED;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.TEST_WONT_EXECUTE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -39,17 +50,17 @@ class ResilienceOperatorsTest {
                 .minimumNumberOfCalls(2)
                 .failureRateThreshold(50.0f)
                 .waitDurationInOpenState(Duration.ofSeconds(5))
-                .build()).circuitBreaker("testCB");
+                .build()).circuitBreaker(RESILIENCE_CB_NAME);
 
         retry = RetryRegistry.of(RetryConfig.custom()
                 .maxAttempts(3)
                 .intervalFunction(IntervalFunction.of(Duration.ofMillis(10)))
                 .retryExceptions(TransientDataAccessException.class)
-                .build()).retry("testRetry");
+                .build()).retry(RESILIENCE_RETRY_NAME);
 
         timeLimiter = TimeLimiterRegistry.of(TimeLimiterConfig.custom()
                 .timeoutDuration(Duration.ofMillis(200))
-                .build()).timeLimiter("testTL");
+                .build()).timeLimiter(RESILIENCE_TL_NAME);
 
         operators = new ResilienceOperators(circuitBreaker, retry, timeLimiter);
     }
@@ -57,20 +68,20 @@ class ResilienceOperatorsTest {
     @Test
     @DisplayName("Should successfully emit value when upstream succeeds within timeout")
     void shouldEmitValueWhenUpstreamSucceeds() {
-        Mono<String> source = Mono.just("data");
+        Mono<String> source = Mono.just(TEST_DATA);
 
         StepVerifier.create(operators.apply(source))
-                .expectNext("data")
+                .expectNext(TEST_DATA)
                 .verifyComplete();
     }
 
     @Test
     @DisplayName("Should successfully emit flux items when upstream succeeds")
     void shouldEmitFluxItemsWhenUpstreamSucceeds() {
-        Flux<String> source = Flux.just("item1", "item2");
+        Flux<String> source = Flux.just(TEST_ITEM_1, TEST_ITEM_2);
 
         StepVerifier.create(operators.apply(source))
-                .expectNext("item1", "item2")
+                .expectNext(TEST_ITEM_1, TEST_ITEM_2)
                 .verifyComplete();
     }
 
@@ -82,13 +93,13 @@ class ResilienceOperatorsTest {
         Mono<String> source = Mono.defer(() -> {
             int current = attempts.incrementAndGet();
             if (current < 3) {
-                return Mono.error(new TransientDataAccessException("DB connection lost") {});
+                return Mono.error(new TransientDataAccessException(ERROR_DB_CONNECTION_LOST) {});
             }
-            return Mono.just("recovered");
+            return Mono.just(TEST_RECOVERED);
         });
 
         StepVerifier.create(operators.apply(source))
-                .expectNext("recovered")
+                .expectNext(TEST_RECOVERED)
                 .verifyComplete();
 
         assertEquals(3, attempts.get());
@@ -98,7 +109,7 @@ class ResilienceOperatorsTest {
     @DisplayName("Should trigger timeout when Mono exceeds configured duration")
     void shouldTriggerTimeoutWhenExceedsDuration() {
         Mono<String> slowMono = Mono.delay(Duration.ofMillis(500))
-                .map(l -> "late");
+                .map(l -> TEST_LATE);
 
         StepVerifier.create(operators.apply(slowMono))
                 .expectErrorMatches(throwable -> throwable instanceof java.util.concurrent.TimeoutException)
@@ -108,7 +119,7 @@ class ResilienceOperatorsTest {
     @Test
     @DisplayName("Should transition CircuitBreaker to OPEN when failure threshold is exceeded")
     void shouldOpenCircuitBreakerOnFailures() {
-        Mono<String> failingMono = Mono.error(new RuntimeException("Fatal DB error"));
+        Mono<String> failingMono = Mono.error(new RuntimeException(ERROR_FATAL_DB));
 
         // Call 1 fails
         StepVerifier.create(operators.apply(failingMono))
@@ -123,7 +134,7 @@ class ResilienceOperatorsTest {
         assertEquals(CircuitBreaker.State.OPEN, circuitBreaker.getState());
 
         // Call 3 should fail-fast with CallNotPermittedException
-        StepVerifier.create(operators.apply(Mono.just("wont-execute")))
+        StepVerifier.create(operators.apply(Mono.just(TEST_WONT_EXECUTE)))
                 .expectErrorMatches(throwable -> throwable instanceof CallNotPermittedException)
                 .verify();
     }

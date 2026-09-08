@@ -14,6 +14,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
+
 @Component
 @RequiredArgsConstructor
 public class FranchiseHandler {
@@ -37,7 +39,7 @@ public class FranchiseHandler {
     }
 
     public Mono<ServerResponse> updateFranchiseName(ServerRequest request) {
-        String franchiseId = request.pathVariable("franchiseId");
+        String franchiseId = request.pathVariable(PATH_VAR_FRANCHISE_ID);
         return request.bodyToMono(UpdateFranchiseNameRequest.class)
                 .flatMap(req -> updateFranchiseNameUseCase.execute(new FranchiseModelId(franchiseId), req.name()))
                 .map(updatedFranchise -> FranchiseResponse.builder()

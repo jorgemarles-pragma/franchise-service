@@ -16,7 +16,7 @@ public class CreateFranchiseUseCase {
                 .flatMap(f -> Mono.justOrEmpty(f.getName()))
                 .map(String::trim)
                 .filter(name -> !name.isEmpty())
-                .switchIfEmpty(Mono.error(new InvalidFranchiseNameException("Franchise name cannot be empty or null")))
+                .switchIfEmpty(Mono.error(new InvalidFranchiseNameException()))
                 .map(validName -> franchise.toBuilder().name(validName).build())
                 .flatMap(franchiseModelRepository::create);
     }

@@ -3,6 +3,7 @@ package com.pragma.jamarlesf.r2dbc.product;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
+import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.r2dbc.helper.ResilienceOperators;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,31 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ERROR_DB_CONNECTION;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ERROR_DB_DELETE_FAILED;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ERROR_DB_QUERY_FAILED;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_NINE_NINE_NINE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_NINE_NINE_NINE_LONG;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_NON_NUMERIC;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_ONE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_ONE_HUNDRED;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_ONE_HUNDRED_LONG;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_ONE_HUNDRED_ONE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_ONE_HUNDRED_ONE_LONG;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_ONE_LONG;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_TEN;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_TEN_LONG;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_TWENTY;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_TWENTY_LONG;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_TWO_HUNDRED_ONE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.ID_TWO_HUNDRED_ONE_LONG;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.PRODUCT_NAME_DEFAULT;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.PRODUCT_NAME_FRIES;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.STOCK_EIGHTY;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.STOCK_FIFTY;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.STOCK_FIVE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.STOCK_SEVENTY_FIVE;
+import static com.pragma.jamarlesf.r2dbc.constant.R2dbcTestConstants.WHITESPACE_STRING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,16 +68,16 @@ class ProductRepositoryAdapterTest {
     @Test
     void mustCreateProductSuccessfully() {
         ProductModel inputModel = ProductModel.builder()
-                .name("Hamburguesa Doble")
-                .stock(50)
-                .branchId(new BranchModelId("10"))
+                .name(PRODUCT_NAME_DEFAULT)
+                .stock(STOCK_FIFTY)
+                .branchId(new BranchModelId(ID_TEN))
                 .build();
 
         ProductData savedData = ProductData.builder()
-                .id(100L)
-                .name("Hamburguesa Doble")
-                .stock(50)
-                .branchId(10L)
+                .id(ID_ONE_HUNDRED_LONG)
+                .name(PRODUCT_NAME_DEFAULT)
+                .stock(STOCK_FIFTY)
+                .branchId(ID_TEN_LONG)
                 .build();
 
         when(repository.save(any(ProductData.class))).thenReturn(Mono.just(savedData));
@@ -61,11 +86,11 @@ class ProductRepositoryAdapterTest {
                 .assertNext(result -> {
                     assertNotNull(result);
                     assertNotNull(result.getId());
-                    assertEquals("100", result.getId().value());
-                    assertEquals("Hamburguesa Doble", result.getName());
-                    assertEquals(50, result.getStock());
+                    assertEquals(ID_ONE_HUNDRED, result.getId().value());
+                    assertEquals(PRODUCT_NAME_DEFAULT, result.getName());
+                    assertEquals(STOCK_FIFTY, result.getStock());
                     assertNotNull(result.getBranchId());
-                    assertEquals("10", result.getBranchId().value());
+                    assertEquals(ID_TEN, result.getBranchId().value());
                 })
                 .verifyComplete();
 
@@ -75,17 +100,17 @@ class ProductRepositoryAdapterTest {
     @Test
     void mustPropagateErrorWhenDatabaseFails() {
         ProductModel inputModel = ProductModel.builder()
-                .name("Producto Fallido")
-                .stock(5)
-                .branchId(new BranchModelId("10"))
+                .name(PRODUCT_NAME_DEFAULT)
+                .stock(STOCK_FIVE)
+                .branchId(new BranchModelId(ID_TEN))
                 .build();
 
-        RuntimeException dbException = new RuntimeException("Database connection error");
+        RuntimeException dbException = new RuntimeException(ERROR_DB_CONNECTION);
         when(repository.save(any(ProductData.class))).thenReturn(Mono.error(dbException));
 
         StepVerifier.create(adapter.create(inputModel))
                 .expectErrorMatches(error -> error instanceof RuntimeException
-                        && error.getMessage().equals("Database connection error"))
+                        && error.getMessage().equals(ERROR_DB_CONNECTION))
                 .verify();
 
         verify(repository).save(any(ProductData.class));
@@ -94,68 +119,68 @@ class ProductRepositoryAdapterTest {
     @Test
     void mustFindProductByIdSuccessfully() {
         ProductData foundData = ProductData.builder()
-                .id(100L)
-                .name("Hamburguesa Doble")
-                .stock(50)
-                .branchId(10L)
+                .id(ID_ONE_HUNDRED_LONG)
+                .name(PRODUCT_NAME_DEFAULT)
+                .stock(STOCK_FIFTY)
+                .branchId(ID_TEN_LONG)
                 .build();
 
-        when(repository.findById(100L)).thenReturn(Mono.just(foundData));
+        when(repository.findById(ID_ONE_HUNDRED_LONG)).thenReturn(Mono.just(foundData));
 
-        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("100")))
+        StepVerifier.create(adapter.findById(new ProductModelId(ID_ONE_HUNDRED)))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("100", result.getId().value());
-                    assertEquals("Hamburguesa Doble", result.getName());
-                    assertEquals(50, result.getStock());
+                    assertEquals(ID_ONE_HUNDRED, result.getId().value());
+                    assertEquals(PRODUCT_NAME_DEFAULT, result.getName());
+                    assertEquals(STOCK_FIFTY, result.getStock());
                 })
                 .verifyComplete();
 
-        verify(repository).findById(100L);
+        verify(repository).findById(ID_ONE_HUNDRED_LONG);
     }
 
     @Test
     void mustReturnEmptyWhenProductNotFound() {
-        when(repository.findById(999L)).thenReturn(Mono.empty());
+        when(repository.findById(ID_NINE_NINE_NINE_LONG)).thenReturn(Mono.empty());
 
-        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("999")))
+        StepVerifier.create(adapter.findById(new ProductModelId(ID_NINE_NINE_NINE)))
                 .verifyComplete();
 
-        verify(repository).findById(999L);
+        verify(repository).findById(ID_NINE_NINE_NINE_LONG);
     }
 
     @Test
     void mustReturnEmptyWhenIdIsNull() {
-        StepVerifier.create(adapter.findById((com.pragma.jamarlesf.model.productmodel.ProductModelId) null))
+        StepVerifier.create(adapter.findById((ProductModelId) null))
                 .verifyComplete();
     }
 
     @Test
     void mustReturnEmptyWhenIdIsBlank() {
-        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("  ")))
+        StepVerifier.create(adapter.findById(new ProductModelId(WHITESPACE_STRING)))
                 .verifyComplete();
     }
 
     @Test
     void mustReturnEmptyWhenIdIsNonNumeric() {
-        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("abc")))
+        StepVerifier.create(adapter.findById(new ProductModelId(ID_NON_NUMERIC)))
                 .verifyComplete();
     }
 
     @Test
     void mustUpdateProductSuccessfully() {
         ProductModel inputModel = ProductModel.builder()
-                .id(new com.pragma.jamarlesf.model.productmodel.ProductModelId("100"))
-                .name("Hamburguesa Doble")
-                .stock(75)
-                .branchId(new BranchModelId("10"))
+                .id(new ProductModelId(ID_ONE_HUNDRED))
+                .name(PRODUCT_NAME_DEFAULT)
+                .stock(STOCK_SEVENTY_FIVE)
+                .branchId(new BranchModelId(ID_TEN))
                 .build();
 
         ProductData savedData = ProductData.builder()
-                .id(100L)
-                .name("Hamburguesa Doble")
-                .stock(75)
-                .branchId(10L)
+                .id(ID_ONE_HUNDRED_LONG)
+                .name(PRODUCT_NAME_DEFAULT)
+                .stock(STOCK_SEVENTY_FIVE)
+                .branchId(ID_TEN_LONG)
                 .build();
 
         when(repository.save(any(ProductData.class))).thenReturn(Mono.just(savedData));
@@ -163,8 +188,8 @@ class ProductRepositoryAdapterTest {
         StepVerifier.create(adapter.update(inputModel))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("100", result.getId().value());
-                    assertEquals(75, result.getStock());
+                    assertEquals(ID_ONE_HUNDRED, result.getId().value());
+                    assertEquals(STOCK_SEVENTY_FIVE, result.getStock());
                 })
                 .verifyComplete();
 
@@ -174,39 +199,39 @@ class ProductRepositoryAdapterTest {
     @Test
     void mustFindHighestStockProductsSuccessfully() {
         ProductData data1 = ProductData.builder()
-                .id(101L)
-                .name("Hamburguesa Doble")
-                .stock(50)
-                .branchId(10L)
+                .id(ID_ONE_HUNDRED_ONE_LONG)
+                .name(PRODUCT_NAME_DEFAULT)
+                .stock(STOCK_FIFTY)
+                .branchId(ID_TEN_LONG)
                 .build();
 
         ProductData data2 = ProductData.builder()
-                .id(201L)
-                .name("Papas Medianas")
-                .stock(80)
-                .branchId(20L)
+                .id(ID_TWO_HUNDRED_ONE_LONG)
+                .name(PRODUCT_NAME_FRIES)
+                .stock(STOCK_EIGHTY)
+                .branchId(ID_TWENTY_LONG)
                 .build();
 
-        when(repository.findHighestStockByFranchiseId(1L)).thenReturn(Flux.just(data1, data2));
+        when(repository.findHighestStockByFranchiseId(ID_ONE_LONG)).thenReturn(Flux.just(data1, data2));
 
-        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId("1")))
+        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId(ID_ONE)))
                 .assertNext(p1 -> {
                     assertNotNull(p1);
-                    assertEquals("101", p1.getId().value());
-                    assertEquals("Hamburguesa Doble", p1.getName());
-                    assertEquals(50, p1.getStock());
-                    assertEquals("10", p1.getBranchId().value());
+                    assertEquals(ID_ONE_HUNDRED_ONE, p1.getId().value());
+                    assertEquals(PRODUCT_NAME_DEFAULT, p1.getName());
+                    assertEquals(STOCK_FIFTY, p1.getStock());
+                    assertEquals(ID_TEN, p1.getBranchId().value());
                 })
                 .assertNext(p2 -> {
                     assertNotNull(p2);
-                    assertEquals("201", p2.getId().value());
-                    assertEquals("Papas Medianas", p2.getName());
-                    assertEquals(80, p2.getStock());
-                    assertEquals("20", p2.getBranchId().value());
+                    assertEquals(ID_TWO_HUNDRED_ONE, p2.getId().value());
+                    assertEquals(PRODUCT_NAME_FRIES, p2.getName());
+                    assertEquals(STOCK_EIGHTY, p2.getStock());
+                    assertEquals(ID_TWENTY, p2.getBranchId().value());
                 })
                 .verifyComplete();
 
-        verify(repository).findHighestStockByFranchiseId(1L);
+        verify(repository).findHighestStockByFranchiseId(ID_ONE_LONG);
     }
 
     @Test
@@ -217,37 +242,37 @@ class ProductRepositoryAdapterTest {
 
     @Test
     void mustReturnEmptyWhenFranchiseIdIsBlankOnFindHighestStock() {
-        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId("  ")))
+        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId(WHITESPACE_STRING)))
                 .verifyComplete();
     }
 
     @Test
     void mustReturnEmptyWhenFranchiseIdIsNonNumericOnFindHighestStock() {
-        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId("abc")))
+        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId(ID_NON_NUMERIC)))
                 .verifyComplete();
     }
 
     @Test
     void mustPropagateErrorWhenDatabaseFailsOnFindHighestStock() {
-        RuntimeException dbException = new RuntimeException("DB query failed");
-        when(repository.findHighestStockByFranchiseId(1L)).thenReturn(Flux.error(dbException));
+        RuntimeException dbException = new RuntimeException(ERROR_DB_QUERY_FAILED);
+        when(repository.findHighestStockByFranchiseId(ID_ONE_LONG)).thenReturn(Flux.error(dbException));
 
-        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId("1")))
+        StepVerifier.create(adapter.findHighestStockByFranchiseId(new FranchiseModelId(ID_ONE)))
                 .expectErrorMatches(error -> error instanceof RuntimeException
-                        && error.getMessage().equals("DB query failed"))
+                        && error.getMessage().equals(ERROR_DB_QUERY_FAILED))
                 .verify();
 
-        verify(repository).findHighestStockByFranchiseId(1L);
+        verify(repository).findHighestStockByFranchiseId(ID_ONE_LONG);
     }
 
     @Test
     void mustDeleteProductSuccessfullyWhenIdIsValid() {
-        when(repository.deleteById(100L)).thenReturn(Mono.empty());
+        when(repository.deleteById(ID_ONE_HUNDRED_LONG)).thenReturn(Mono.empty());
 
-        StepVerifier.create(adapter.deleteById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("100")))
+        StepVerifier.create(adapter.deleteById(new ProductModelId(ID_ONE_HUNDRED)))
                 .verifyComplete();
 
-        verify(repository).deleteById(100L);
+        verify(repository).deleteById(ID_ONE_HUNDRED_LONG);
     }
 
     @Test
@@ -258,27 +283,27 @@ class ProductRepositoryAdapterTest {
 
     @Test
     void mustReturnEmptyWhenIdIsBlankOnDeleteById() {
-        StepVerifier.create(adapter.deleteById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("  ")))
+        StepVerifier.create(adapter.deleteById(new ProductModelId(WHITESPACE_STRING)))
                 .verifyComplete();
     }
 
     @Test
     void mustReturnEmptyWhenIdIsNonNumericOnDeleteById() {
-        StepVerifier.create(adapter.deleteById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("abc")))
+        StepVerifier.create(adapter.deleteById(new ProductModelId(ID_NON_NUMERIC)))
                 .verifyComplete();
     }
 
     @Test
     void mustPropagateErrorWhenDatabaseFailsOnDeleteById() {
-        RuntimeException dbException = new RuntimeException("DB delete failed");
-        when(repository.deleteById(100L)).thenReturn(Mono.error(dbException));
+        RuntimeException dbException = new RuntimeException(ERROR_DB_DELETE_FAILED);
+        when(repository.deleteById(ID_ONE_HUNDRED_LONG)).thenReturn(Mono.error(dbException));
 
-        StepVerifier.create(adapter.deleteById(new com.pragma.jamarlesf.model.productmodel.ProductModelId("100")))
+        StepVerifier.create(adapter.deleteById(new ProductModelId(ID_ONE_HUNDRED)))
                 .expectErrorMatches(error -> error instanceof RuntimeException
-                        && error.getMessage().equals("DB delete failed"))
+                        && error.getMessage().equals(ERROR_DB_DELETE_FAILED))
                 .verify();
 
-        verify(repository).deleteById(100L);
+        verify(repository).deleteById(ID_ONE_HUNDRED_LONG);
     }
 }
 

@@ -21,6 +21,10 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_BRANCH_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_PRODUCT_ID;
+
 @Component
 @RequiredArgsConstructor
 public class ProductHandler {
@@ -31,9 +35,8 @@ public class ProductHandler {
     private final UpdateProductNameUseCase updateProductNameUseCase;
     private final DeleteProductFromBranchUseCase deleteProductFromBranchUseCase;
 
-
     public Mono<ServerResponse> addProduct(ServerRequest request) {
-        String branchId = request.pathVariable("branchId");
+        String branchId = request.pathVariable(PATH_VAR_BRANCH_ID);
         return request.bodyToMono(ProductRequest.class)
                 .map(req -> ProductModel.builder()
                         .name(req.name())
@@ -52,7 +55,7 @@ public class ProductHandler {
     }
 
     public Mono<ServerResponse> updateStock(ServerRequest request) {
-        String productId = request.pathVariable("productId");
+        String productId = request.pathVariable(PATH_VAR_PRODUCT_ID);
         return request.bodyToMono(UpdateProductStockRequest.class)
                 .flatMap(req -> modifyProductStockUseCase.execute(new ProductModelId(productId), req.stock()))
                 .map(updatedProduct -> ProductResponse.builder()
@@ -67,7 +70,7 @@ public class ProductHandler {
     }
 
     public Mono<ServerResponse> getHighestStockProducts(ServerRequest request) {
-        String franchiseId = request.pathVariable("franchiseId");
+        String franchiseId = request.pathVariable(PATH_VAR_FRANCHISE_ID);
         return getHighestStockProductsByFranchiseUseCase.execute(new FranchiseModelId(franchiseId))
                 .map(product -> ProductResponse.builder()
                         .id(product.getId() != null ? product.getId().value() : null)
@@ -83,7 +86,7 @@ public class ProductHandler {
     }
 
     public Mono<ServerResponse> updateProductName(ServerRequest request) {
-        String productId = request.pathVariable("productId");
+        String productId = request.pathVariable(PATH_VAR_PRODUCT_ID);
         return request.bodyToMono(UpdateProductNameRequest.class)
                 .flatMap(req -> updateProductNameUseCase.execute(new ProductModelId(productId), req.name()))
                 .map(updatedProduct -> ProductResponse.builder()
@@ -98,10 +101,9 @@ public class ProductHandler {
     }
 
     public Mono<ServerResponse> deleteProduct(ServerRequest request) {
-        String branchId = request.pathVariable("branchId");
-        String productId = request.pathVariable("productId");
+        String branchId = request.pathVariable(PATH_VAR_BRANCH_ID);
+        String productId = request.pathVariable(PATH_VAR_PRODUCT_ID);
         return deleteProductFromBranchUseCase.execute(new BranchModelId(branchId), new ProductModelId(productId))
                 .then(ServerResponse.noContent().build());
     }
 }
-

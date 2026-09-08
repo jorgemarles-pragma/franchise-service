@@ -1,5 +1,6 @@
 package com.pragma.jamarlesf.usecase.modifyproductstock;
 
+import com.pragma.jamarlesf.model.constant.ErrorMessageConstants;
 import com.pragma.jamarlesf.model.exception.InvalidProductStockException;
 import com.pragma.jamarlesf.model.exception.ProductNotFoundException;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
@@ -16,9 +17,9 @@ public class ModifyProductStockUseCase {
     public Mono<ProductModel> execute(ProductModelId productId, Integer newStock) {
         return Mono.justOrEmpty(newStock)
                 .filter(stock -> stock >= 0)
-                .switchIfEmpty(Mono.error(new InvalidProductStockException("Product stock must be greater than or equal to 0")))
+                .switchIfEmpty(Mono.error(new InvalidProductStockException()))
                 .flatMap(validStock -> productModelRepository.findById(productId))
-                .switchIfEmpty(Mono.error(new ProductNotFoundException(productId != null ? productId.value() : "null")))
+                .switchIfEmpty(Mono.error(new ProductNotFoundException(productId != null ? productId.value() : ErrorMessageConstants.NULL_ID_VALUE)))
                 .map(existingProduct -> existingProduct.toBuilder()
                         .stock(newStock)
                         .build())

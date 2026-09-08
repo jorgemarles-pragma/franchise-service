@@ -7,6 +7,7 @@ import com.pragma.jamarlesf.model.exception.FranchiseNotFoundException;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.franchisemodel.gateways.FranchiseModelRepository;
+import com.pragma.jamarlesf.usecase.constant.UseCaseTestConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,19 +43,19 @@ class AddBranchToFranchiseUseCaseTest {
     @Test
     @DisplayName("Should add branch successfully when franchise exists")
     void shouldAddBranchSuccessfullyWhenFranchiseExists() {
-        FranchiseModelId franchiseId = new FranchiseModelId("1");
+        FranchiseModelId franchiseId = new FranchiseModelId(UseCaseTestConstants.ID_ONE);
         FranchiseModel existingFranchise = FranchiseModel.builder()
                 .id(franchiseId)
-                .name("Franquicia Central")
+                .name(UseCaseTestConstants.FRANCHISE_NAME_MCDONALDS)
                 .build();
 
         BranchModel inputBranch = BranchModel.builder()
-                .name("Sucursal Norte")
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
                 .build();
 
         BranchModel createdBranch = BranchModel.builder()
-                .id(new BranchModelId("10"))
-                .name("Sucursal Norte")
+                .id(new BranchModelId(UseCaseTestConstants.ID_TEN))
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
                 .franchiseId(franchiseId)
                 .build();
 
@@ -64,9 +65,9 @@ class AddBranchToFranchiseUseCaseTest {
         StepVerifier.create(useCase.execute(franchiseId, inputBranch))
                 .assertNext(result -> {
                     assertNotNull(result);
-                    assertEquals("10", result.getId().value());
-                    assertEquals("Sucursal Norte", result.getName());
-                    assertEquals("1", result.getFranchiseId().value());
+                    assertEquals(UseCaseTestConstants.ID_TEN, result.getId().value());
+                    assertEquals(UseCaseTestConstants.BRANCH_NAME_NORTE, result.getName());
+                    assertEquals(UseCaseTestConstants.ID_ONE, result.getFranchiseId().value());
                 })
                 .verifyComplete();
 
@@ -77,16 +78,16 @@ class AddBranchToFranchiseUseCaseTest {
     @Test
     @DisplayName("Should emit FranchiseNotFoundException when franchise does not exist")
     void shouldEmitFranchiseNotFoundExceptionWhenFranchiseDoesNotExist() {
-        FranchiseModelId franchiseId = new FranchiseModelId("999");
+        FranchiseModelId franchiseId = new FranchiseModelId(UseCaseTestConstants.ID_NON_EXISTENT);
         BranchModel inputBranch = BranchModel.builder()
-                .name("Sucursal Fantasma")
+                .name(UseCaseTestConstants.BRANCH_NAME_DOWNTOWN)
                 .build();
 
         when(franchiseModelRepository.findById(franchiseId)).thenReturn(Mono.empty());
 
         StepVerifier.create(useCase.execute(franchiseId, inputBranch))
                 .expectErrorMatches(throwable -> throwable instanceof FranchiseNotFoundException
-                        && throwable.getMessage().contains("999"))
+                        && throwable.getMessage().contains(UseCaseTestConstants.ID_NON_EXISTENT))
                 .verify();
 
         verify(franchiseModelRepository).findById(franchiseId);

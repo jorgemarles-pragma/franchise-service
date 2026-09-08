@@ -8,6 +8,7 @@ import com.pragma.jamarlesf.model.franchisemodel.gateways.FranchiseModelReposito
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.model.productmodel.gateways.ProductModelRepository;
+import com.pragma.jamarlesf.usecase.constant.UseCaseTestConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,24 +45,24 @@ class GetHighestStockProductsByFranchiseUseCaseTest {
     @Test
     @DisplayName("Should return highest stock products when franchise exists")
     void shouldReturnHighestStockProductsWhenFranchiseExists() {
-        FranchiseModelId franchiseId = new FranchiseModelId("1");
+        FranchiseModelId franchiseId = new FranchiseModelId(UseCaseTestConstants.ID_ONE);
         FranchiseModel existingFranchise = FranchiseModel.builder()
                 .id(franchiseId)
-                .name("Franquicia Central")
+                .name(UseCaseTestConstants.FRANCHISE_NAME_MCDONALDS)
                 .build();
 
         ProductModel productBranch1 = ProductModel.builder()
-                .id(new ProductModelId("101"))
-                .name("Hamburguesa Doble")
-                .stock(50)
-                .branchId(new BranchModelId("10"))
+                .id(new ProductModelId(UseCaseTestConstants.ID_ONE_HUNDRED))
+                .name(UseCaseTestConstants.PRODUCT_NAME_BURGER)
+                .stock(UseCaseTestConstants.STOCK_FIFTY)
+                .branchId(new BranchModelId(UseCaseTestConstants.ID_TEN))
                 .build();
 
         ProductModel productBranch2 = ProductModel.builder()
-                .id(new ProductModelId("201"))
-                .name("Papas Medianas")
-                .stock(80)
-                .branchId(new BranchModelId("20"))
+                .id(new ProductModelId(UseCaseTestConstants.ID_TWO))
+                .name(UseCaseTestConstants.PRODUCT_NAME_FRIES)
+                .stock(UseCaseTestConstants.STOCK_ONE_HUNDRED)
+                .branchId(new BranchModelId(UseCaseTestConstants.ID_TWENTY))
                 .build();
 
         when(franchiseModelRepository.findById(franchiseId)).thenReturn(Mono.just(existingFranchise));
@@ -70,17 +71,17 @@ class GetHighestStockProductsByFranchiseUseCaseTest {
         StepVerifier.create(useCase.execute(franchiseId))
                 .assertNext(p1 -> {
                     assertNotNull(p1);
-                    assertEquals("101", p1.getId().value());
-                    assertEquals("Hamburguesa Doble", p1.getName());
-                    assertEquals(50, p1.getStock());
-                    assertEquals("10", p1.getBranchId().value());
+                    assertEquals(UseCaseTestConstants.ID_ONE_HUNDRED, p1.getId().value());
+                    assertEquals(UseCaseTestConstants.PRODUCT_NAME_BURGER, p1.getName());
+                    assertEquals(UseCaseTestConstants.STOCK_FIFTY, p1.getStock());
+                    assertEquals(UseCaseTestConstants.ID_TEN, p1.getBranchId().value());
                 })
                 .assertNext(p2 -> {
                     assertNotNull(p2);
-                    assertEquals("201", p2.getId().value());
-                    assertEquals("Papas Medianas", p2.getName());
-                    assertEquals(80, p2.getStock());
-                    assertEquals("20", p2.getBranchId().value());
+                    assertEquals(UseCaseTestConstants.ID_TWO, p2.getId().value());
+                    assertEquals(UseCaseTestConstants.PRODUCT_NAME_FRIES, p2.getName());
+                    assertEquals(UseCaseTestConstants.STOCK_ONE_HUNDRED, p2.getStock());
+                    assertEquals(UseCaseTestConstants.ID_TWENTY, p2.getBranchId().value());
                 })
                 .verifyComplete();
 
@@ -91,12 +92,12 @@ class GetHighestStockProductsByFranchiseUseCaseTest {
     @Test
     @DisplayName("Should emit FranchiseNotFoundException when franchise does not exist")
     void shouldEmitFranchiseNotFoundExceptionWhenFranchiseDoesNotExist() {
-        FranchiseModelId franchiseId = new FranchiseModelId("999");
+        FranchiseModelId franchiseId = new FranchiseModelId(UseCaseTestConstants.ID_NON_EXISTENT);
         when(franchiseModelRepository.findById(franchiseId)).thenReturn(Mono.empty());
 
         StepVerifier.create(useCase.execute(franchiseId))
                 .expectErrorMatches(throwable -> throwable instanceof FranchiseNotFoundException
-                        && throwable.getMessage().contains("999"))
+                        && throwable.getMessage().contains(UseCaseTestConstants.ID_NON_EXISTENT))
                 .verify();
 
         verify(franchiseModelRepository).findById(franchiseId);
@@ -117,7 +118,7 @@ class GetHighestStockProductsByFranchiseUseCaseTest {
     @Test
     @DisplayName("Should emit FranchiseNotFoundException when franchiseId value is blank")
     void shouldEmitFranchiseNotFoundExceptionWhenFranchiseIdValueIsBlank() {
-        StepVerifier.create(useCase.execute(new FranchiseModelId("  ")))
+        StepVerifier.create(useCase.execute(new FranchiseModelId(UseCaseTestConstants.WHITESPACE_STRING)))
                 .expectError(FranchiseNotFoundException.class)
                 .verify();
 
@@ -128,10 +129,10 @@ class GetHighestStockProductsByFranchiseUseCaseTest {
     @Test
     @DisplayName("Should return empty flux when franchise exists but has no products")
     void shouldReturnEmptyFluxWhenFranchiseExistsButHasNoProducts() {
-        FranchiseModelId franchiseId = new FranchiseModelId("1");
+        FranchiseModelId franchiseId = new FranchiseModelId(UseCaseTestConstants.ID_ONE);
         FranchiseModel existingFranchise = FranchiseModel.builder()
                 .id(franchiseId)
-                .name("Franquicia Central")
+                .name(UseCaseTestConstants.FRANCHISE_NAME_MCDONALDS)
                 .build();
 
         when(franchiseModelRepository.findById(franchiseId)).thenReturn(Mono.just(existingFranchise));
@@ -147,17 +148,17 @@ class GetHighestStockProductsByFranchiseUseCaseTest {
     @Test
     @DisplayName("Should propagate error when product repository fails")
     void shouldPropagateErrorWhenProductRepositoryFails() {
-        FranchiseModelId franchiseId = new FranchiseModelId("1");
+        FranchiseModelId franchiseId = new FranchiseModelId(UseCaseTestConstants.ID_ONE);
         FranchiseModel existingFranchise = FranchiseModel.builder()
                 .id(franchiseId)
-                .name("Franquicia Central")
+                .name(UseCaseTestConstants.FRANCHISE_NAME_MCDONALDS)
                 .build();
 
         when(franchiseModelRepository.findById(franchiseId)).thenReturn(Mono.just(existingFranchise));
-        when(productModelRepository.findHighestStockByFranchiseId(franchiseId)).thenReturn(Flux.error(new RuntimeException("Database error")));
+        when(productModelRepository.findHighestStockByFranchiseId(franchiseId)).thenReturn(Flux.error(new RuntimeException(UseCaseTestConstants.DATABASE_ERROR_MSG)));
 
         StepVerifier.create(useCase.execute(franchiseId))
-                .expectErrorMatches(error -> error instanceof RuntimeException && error.getMessage().equals("Database error"))
+                .expectErrorMatches(error -> error instanceof RuntimeException && error.getMessage().equals(UseCaseTestConstants.DATABASE_ERROR_MSG))
                 .verify();
 
         verify(franchiseModelRepository).findById(franchiseId);

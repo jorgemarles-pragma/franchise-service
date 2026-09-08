@@ -1,7 +1,9 @@
 package com.pragma.jamarlesf.api.exception;
 
 import tools.jackson.databind.ObjectMapper;
+import com.pragma.jamarlesf.api.constant.ApiTestConstants;
 import com.pragma.jamarlesf.api.dto.response.ErrorResponse;
+import com.pragma.jamarlesf.model.constant.ErrorMessageConstants;
 import com.pragma.jamarlesf.model.exception.BranchNotFoundException;
 import com.pragma.jamarlesf.model.exception.FranchiseNotFoundException;
 import com.pragma.jamarlesf.model.exception.InvalidBranchNameException;
@@ -21,7 +23,6 @@ import org.springframework.web.server.ServerWebInputException;
 import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GlobalErrorWebExceptionHandlerTest {
@@ -37,8 +38,8 @@ class GlobalErrorWebExceptionHandlerTest {
     @Test
     @DisplayName("Should return 404 when FranchiseNotFoundException is thrown")
     void shouldReturn404WhenFranchiseNotFoundExceptionIsThrown() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/franchises/999"));
-        FranchiseNotFoundException ex = new FranchiseNotFoundException("999");
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(ApiTestConstants.TEST_PATH));
+        FranchiseNotFoundException ex = new FranchiseNotFoundException(ApiTestConstants.ID_NON_EXISTENT);
 
         StepVerifier.create(handler.handle(exchange, ex))
                 .verifyComplete();
@@ -50,11 +51,11 @@ class GlobalErrorWebExceptionHandlerTest {
                 .assertNext(body -> {
                     try {
                         ErrorResponse response = objectMapper.readValue(body, ErrorResponse.class);
-                        assertEquals(404, response.status());
-                        assertEquals("FRANCHISE_NOT_FOUND", response.error());
-                        assertTrue(response.message().contains("999"));
+                        assertEquals(HttpStatus.NOT_FOUND.value(), response.status());
+                        assertEquals(ErrorTypeConstants.FRANCHISE_NOT_FOUND, response.error());
+                        assertTrue(response.message().contains(ApiTestConstants.ID_NON_EXISTENT));
                     } catch (Exception e) {
-                        throw new AssertionError("Failed to deserialize ErrorResponse", e);
+                        throw new AssertionError(ApiTestConstants.SAMPLE_ERROR_MESSAGE, e);
                     }
                 })
                 .verifyComplete();
@@ -63,8 +64,8 @@ class GlobalErrorWebExceptionHandlerTest {
     @Test
     @DisplayName("Should return 404 when BranchNotFoundException is thrown")
     void shouldReturn404WhenBranchNotFoundExceptionIsThrown() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/branches/888"));
-        BranchNotFoundException ex = new BranchNotFoundException("888");
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(ApiTestConstants.TEST_PATH));
+        BranchNotFoundException ex = new BranchNotFoundException(ApiTestConstants.ID_NON_EXISTENT);
 
         StepVerifier.create(handler.handle(exchange, ex))
                 .verifyComplete();
@@ -75,10 +76,10 @@ class GlobalErrorWebExceptionHandlerTest {
                 .assertNext(body -> {
                     try {
                         ErrorResponse response = objectMapper.readValue(body, ErrorResponse.class);
-                        assertEquals(404, response.status());
-                        assertEquals("BRANCH_NOT_FOUND", response.error());
+                        assertEquals(HttpStatus.NOT_FOUND.value(), response.status());
+                        assertEquals(ErrorTypeConstants.BRANCH_NOT_FOUND, response.error());
                     } catch (Exception e) {
-                        throw new AssertionError("Failed to deserialize ErrorResponse", e);
+                        throw new AssertionError(ApiTestConstants.SAMPLE_ERROR_MESSAGE, e);
                     }
                 })
                 .verifyComplete();
@@ -87,8 +88,8 @@ class GlobalErrorWebExceptionHandlerTest {
     @Test
     @DisplayName("Should return 404 when ProductNotFoundException is thrown")
     void shouldReturn404WhenProductNotFoundExceptionIsThrown() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/products/777"));
-        ProductNotFoundException ex = new ProductNotFoundException("777");
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(ApiTestConstants.TEST_PATH));
+        ProductNotFoundException ex = new ProductNotFoundException(ApiTestConstants.ID_NON_EXISTENT);
 
         StepVerifier.create(handler.handle(exchange, ex))
                 .verifyComplete();
@@ -99,10 +100,10 @@ class GlobalErrorWebExceptionHandlerTest {
                 .assertNext(body -> {
                     try {
                         ErrorResponse response = objectMapper.readValue(body, ErrorResponse.class);
-                        assertEquals(404, response.status());
-                        assertEquals("PRODUCT_NOT_FOUND", response.error());
+                        assertEquals(HttpStatus.NOT_FOUND.value(), response.status());
+                        assertEquals(ErrorTypeConstants.PRODUCT_NOT_FOUND, response.error());
                     } catch (Exception e) {
-                        throw new AssertionError("Failed to deserialize ErrorResponse", e);
+                        throw new AssertionError(ApiTestConstants.SAMPLE_ERROR_MESSAGE, e);
                     }
                 })
                 .verifyComplete();
@@ -111,8 +112,8 @@ class GlobalErrorWebExceptionHandlerTest {
     @Test
     @DisplayName("Should return 400 when InvalidFranchiseNameException is thrown")
     void shouldReturn400WhenInvalidFranchiseNameExceptionIsThrown() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post("/api/franchises"));
-        InvalidFranchiseNameException ex = new InvalidFranchiseNameException("Franchise name cannot be empty or null");
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(ApiTestConstants.TEST_PATH));
+        InvalidFranchiseNameException ex = new InvalidFranchiseNameException();
 
         StepVerifier.create(handler.handle(exchange, ex))
                 .verifyComplete();
@@ -123,11 +124,11 @@ class GlobalErrorWebExceptionHandlerTest {
                 .assertNext(body -> {
                     try {
                         ErrorResponse response = objectMapper.readValue(body, ErrorResponse.class);
-                        assertEquals(400, response.status());
-                        assertEquals("VALIDATION_ERROR", response.error());
-                        assertEquals("Franchise name cannot be empty or null", response.message());
+                        assertEquals(HttpStatus.BAD_REQUEST.value(), response.status());
+                        assertEquals(ErrorTypeConstants.VALIDATION_ERROR, response.error());
+                        assertEquals(ErrorMessageConstants.FRANCHISE_NAME_CANNOT_BE_EMPTY_OR_NULL, response.message());
                     } catch (Exception e) {
-                        throw new AssertionError("Failed to deserialize ErrorResponse", e);
+                        throw new AssertionError(ApiTestConstants.SAMPLE_ERROR_MESSAGE, e);
                     }
                 })
                 .verifyComplete();
@@ -136,8 +137,8 @@ class GlobalErrorWebExceptionHandlerTest {
     @Test
     @DisplayName("Should return 400 when InvalidBranchNameException is thrown")
     void shouldReturn400WhenInvalidBranchNameExceptionIsThrown() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.patch("/api/branches/1/name"));
-        InvalidBranchNameException ex = new InvalidBranchNameException("Branch name cannot be empty or null");
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.patch(ApiTestConstants.TEST_PATH));
+        InvalidBranchNameException ex = new InvalidBranchNameException();
 
         StepVerifier.create(handler.handle(exchange, ex))
                 .verifyComplete();
@@ -148,10 +149,11 @@ class GlobalErrorWebExceptionHandlerTest {
                 .assertNext(body -> {
                     try {
                         ErrorResponse response = objectMapper.readValue(body, ErrorResponse.class);
-                        assertEquals(400, response.status());
-                        assertEquals("VALIDATION_ERROR", response.error());
+                        assertEquals(HttpStatus.BAD_REQUEST.value(), response.status());
+                        assertEquals(ErrorTypeConstants.VALIDATION_ERROR, response.error());
+                        assertEquals(ErrorMessageConstants.BRANCH_NAME_CANNOT_BE_EMPTY_OR_NULL, response.message());
                     } catch (Exception e) {
-                        throw new AssertionError("Failed to deserialize ErrorResponse", e);
+                        throw new AssertionError(ApiTestConstants.SAMPLE_ERROR_MESSAGE, e);
                     }
                 })
                 .verifyComplete();
@@ -160,8 +162,8 @@ class GlobalErrorWebExceptionHandlerTest {
     @Test
     @DisplayName("Should return 400 when InvalidProductNameException is thrown")
     void shouldReturn400WhenInvalidProductNameExceptionIsThrown() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.patch("/api/products/1/name"));
-        InvalidProductNameException ex = new InvalidProductNameException("Product name cannot be empty or null");
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.patch(ApiTestConstants.TEST_PATH));
+        InvalidProductNameException ex = new InvalidProductNameException();
 
         StepVerifier.create(handler.handle(exchange, ex))
                 .verifyComplete();
@@ -172,10 +174,11 @@ class GlobalErrorWebExceptionHandlerTest {
                 .assertNext(body -> {
                     try {
                         ErrorResponse response = objectMapper.readValue(body, ErrorResponse.class);
-                        assertEquals(400, response.status());
-                        assertEquals("VALIDATION_ERROR", response.error());
+                        assertEquals(HttpStatus.BAD_REQUEST.value(), response.status());
+                        assertEquals(ErrorTypeConstants.VALIDATION_ERROR, response.error());
+                        assertEquals(ErrorMessageConstants.PRODUCT_NAME_CANNOT_BE_EMPTY_OR_NULL, response.message());
                     } catch (Exception e) {
-                        throw new AssertionError("Failed to deserialize ErrorResponse", e);
+                        throw new AssertionError(ApiTestConstants.SAMPLE_ERROR_MESSAGE, e);
                     }
                 })
                 .verifyComplete();
@@ -184,8 +187,8 @@ class GlobalErrorWebExceptionHandlerTest {
     @Test
     @DisplayName("Should return 400 when InvalidProductStockException is thrown")
     void shouldReturn400WhenInvalidProductStockExceptionIsThrown() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.patch("/api/products/1/stock"));
-        InvalidProductStockException ex = new InvalidProductStockException("Product stock must be greater than or equal to 0");
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.patch(ApiTestConstants.TEST_PATH));
+        InvalidProductStockException ex = new InvalidProductStockException();
 
         StepVerifier.create(handler.handle(exchange, ex))
                 .verifyComplete();
@@ -196,10 +199,11 @@ class GlobalErrorWebExceptionHandlerTest {
                 .assertNext(body -> {
                     try {
                         ErrorResponse response = objectMapper.readValue(body, ErrorResponse.class);
-                        assertEquals(400, response.status());
-                        assertEquals("VALIDATION_ERROR", response.error());
+                        assertEquals(HttpStatus.BAD_REQUEST.value(), response.status());
+                        assertEquals(ErrorTypeConstants.VALIDATION_ERROR, response.error());
+                        assertEquals(ErrorMessageConstants.PRODUCT_STOCK_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO, response.message());
                     } catch (Exception e) {
-                        throw new AssertionError("Failed to deserialize ErrorResponse", e);
+                        throw new AssertionError(ApiTestConstants.SAMPLE_ERROR_MESSAGE, e);
                     }
                 })
                 .verifyComplete();
@@ -208,8 +212,8 @@ class GlobalErrorWebExceptionHandlerTest {
     @Test
     @DisplayName("Should return 400 when ServerWebInputException is thrown")
     void shouldReturn400WhenServerWebInputExceptionIsThrown() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post("/api/franchises"));
-        ServerWebInputException ex = new ServerWebInputException("Failed to read HTTP message");
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(ApiTestConstants.TEST_PATH));
+        ServerWebInputException ex = new ServerWebInputException(ApiTestConstants.INVALID_NAME_MESSAGE);
 
         StepVerifier.create(handler.handle(exchange, ex))
                 .verifyComplete();
@@ -220,10 +224,10 @@ class GlobalErrorWebExceptionHandlerTest {
                 .assertNext(body -> {
                     try {
                         ErrorResponse response = objectMapper.readValue(body, ErrorResponse.class);
-                        assertEquals(400, response.status());
-                        assertEquals("MALFORMED_REQUEST", response.error());
+                        assertEquals(HttpStatus.BAD_REQUEST.value(), response.status());
+                        assertEquals(ErrorTypeConstants.MALFORMED_REQUEST, response.error());
                     } catch (Exception e) {
-                        throw new AssertionError("Failed to deserialize ErrorResponse", e);
+                        throw new AssertionError(ApiTestConstants.SAMPLE_ERROR_MESSAGE, e);
                     }
                 })
                 .verifyComplete();
@@ -232,8 +236,8 @@ class GlobalErrorWebExceptionHandlerTest {
     @Test
     @DisplayName("Should return 400 when DecodingException is thrown")
     void shouldReturn400WhenDecodingExceptionIsThrown() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post("/api/franchises"));
-        DecodingException ex = new DecodingException("JSON parse error");
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(ApiTestConstants.TEST_PATH));
+        DecodingException ex = new DecodingException(ApiTestConstants.INVALID_NAME_MESSAGE);
 
         StepVerifier.create(handler.handle(exchange, ex))
                 .verifyComplete();
@@ -244,10 +248,10 @@ class GlobalErrorWebExceptionHandlerTest {
                 .assertNext(body -> {
                     try {
                         ErrorResponse response = objectMapper.readValue(body, ErrorResponse.class);
-                        assertEquals(400, response.status());
-                        assertEquals("MALFORMED_REQUEST", response.error());
+                        assertEquals(HttpStatus.BAD_REQUEST.value(), response.status());
+                        assertEquals(ErrorTypeConstants.MALFORMED_REQUEST, response.error());
                     } catch (Exception e) {
-                        throw new AssertionError("Failed to deserialize ErrorResponse", e);
+                        throw new AssertionError(ApiTestConstants.SAMPLE_ERROR_MESSAGE, e);
                     }
                 })
                 .verifyComplete();
@@ -256,8 +260,8 @@ class GlobalErrorWebExceptionHandlerTest {
     @Test
     @DisplayName("Should return 500 when unexpected Exception is thrown")
     void shouldReturn500WhenUnexpectedExceptionIsThrown() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/franchises"));
-        RuntimeException ex = new RuntimeException("Unexpected database failure");
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(ApiTestConstants.TEST_PATH));
+        RuntimeException ex = new RuntimeException(ApiTestConstants.SAMPLE_ERROR_MESSAGE);
 
         StepVerifier.create(handler.handle(exchange, ex))
                 .verifyComplete();
@@ -268,11 +272,11 @@ class GlobalErrorWebExceptionHandlerTest {
                 .assertNext(body -> {
                     try {
                         ErrorResponse response = objectMapper.readValue(body, ErrorResponse.class);
-                        assertEquals(500, response.status());
-                        assertEquals("INTERNAL_SERVER_ERROR", response.error());
-                        assertEquals("Unexpected database failure", response.message());
+                        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.status());
+                        assertEquals(ErrorTypeConstants.INTERNAL_SERVER_ERROR, response.error());
+                        assertEquals(ApiTestConstants.SAMPLE_ERROR_MESSAGE, response.message());
                     } catch (Exception e) {
-                        throw new AssertionError("Failed to deserialize ErrorResponse", e);
+                        throw new AssertionError(ApiTestConstants.SAMPLE_ERROR_MESSAGE, e);
                     }
                 })
                 .verifyComplete();

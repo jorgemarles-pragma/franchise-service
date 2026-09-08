@@ -1,5 +1,6 @@
 package com.pragma.jamarlesf.usecase.gethigheststockproductsbyfranchise;
 
+import com.pragma.jamarlesf.model.constant.ErrorMessageConstants;
 import com.pragma.jamarlesf.model.exception.FranchiseNotFoundException;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.franchisemodel.gateways.FranchiseModelRepository;
@@ -18,9 +19,9 @@ public class GetHighestStockProductsByFranchiseUseCase {
     public Flux<ProductModel> execute(FranchiseModelId franchiseId) {
         return Mono.justOrEmpty(franchiseId)
                 .filter(id -> id.value() != null && !id.value().isBlank())
-                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(franchiseId != null ? franchiseId.value() : "null")))
+                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(franchiseId != null ? franchiseId.value() : ErrorMessageConstants.NULL_ID_VALUE)))
                 .flatMap(franchiseModelRepository::findById)
-                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(franchiseId != null ? franchiseId.value() : "null")))
+                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(franchiseId != null ? franchiseId.value() : ErrorMessageConstants.NULL_ID_VALUE)))
                 .flatMapMany(franchise -> productModelRepository.findHighestStockByFranchiseId(franchise.getId()));
     }
 }

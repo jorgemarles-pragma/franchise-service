@@ -1,5 +1,6 @@
 package com.pragma.jamarlesf.api;
 
+import com.pragma.jamarlesf.api.constant.ApiTestConstants;
 import com.pragma.jamarlesf.api.dto.request.FranchiseRequest;
 import com.pragma.jamarlesf.api.dto.request.UpdateFranchiseNameRequest;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
@@ -18,6 +19,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,10 +49,10 @@ class FranchiseHandlerTest {
     @Test
     @DisplayName("Should return HTTP 201 when franchise is created successfully")
     void shouldReturn201WhenFranchiseIsCreatedSuccessfully() {
-        FranchiseRequest requestDto = new FranchiseRequest("McDonalds");
+        FranchiseRequest requestDto = new FranchiseRequest(ApiTestConstants.FRANCHISE_NAME_DEFAULT);
         FranchiseModel createdFranchise = FranchiseModel.builder()
-                .id(new FranchiseModelId("1"))
-                .name("McDonalds")
+                .id(new FranchiseModelId(ApiTestConstants.ID_ONE))
+                .name(ApiTestConstants.FRANCHISE_NAME_DEFAULT)
                 .build();
 
         when(serverRequest.bodyToMono(FranchiseRequest.class)).thenReturn(Mono.just(requestDto));
@@ -72,15 +74,15 @@ class FranchiseHandlerTest {
     @Test
     @DisplayName("Should return HTTP 200 when franchise name is updated successfully")
     void shouldReturn200WhenFranchiseNameIsUpdatedSuccessfully() {
-        UpdateFranchiseNameRequest requestDto = new UpdateFranchiseNameRequest("McDonalds Colombia");
+        UpdateFranchiseNameRequest requestDto = new UpdateFranchiseNameRequest(ApiTestConstants.FRANCHISE_NAME_UPDATED);
         FranchiseModel updatedFranchise = FranchiseModel.builder()
-                .id(new FranchiseModelId("1"))
-                .name("McDonalds Colombia")
+                .id(new FranchiseModelId(ApiTestConstants.ID_ONE))
+                .name(ApiTestConstants.FRANCHISE_NAME_UPDATED)
                 .build();
 
-        when(serverRequest.pathVariable("franchiseId")).thenReturn("1");
+        when(serverRequest.pathVariable(PATH_VAR_FRANCHISE_ID)).thenReturn(ApiTestConstants.ID_ONE);
         when(serverRequest.bodyToMono(UpdateFranchiseNameRequest.class)).thenReturn(Mono.just(requestDto));
-        when(updateFranchiseNameUseCase.execute(eq(new FranchiseModelId("1")), eq("McDonalds Colombia")))
+        when(updateFranchiseNameUseCase.execute(eq(new FranchiseModelId(ApiTestConstants.ID_ONE)), eq(ApiTestConstants.FRANCHISE_NAME_UPDATED)))
                 .thenReturn(Mono.just(updatedFranchise));
 
         Mono<ServerResponse> responseMono = franchiseHandler.updateFranchiseName(serverRequest);
@@ -92,8 +94,8 @@ class FranchiseHandlerTest {
                 })
                 .verifyComplete();
 
-        verify(serverRequest).pathVariable("franchiseId");
+        verify(serverRequest).pathVariable(PATH_VAR_FRANCHISE_ID);
         verify(serverRequest).bodyToMono(UpdateFranchiseNameRequest.class);
-        verify(updateFranchiseNameUseCase).execute(eq(new FranchiseModelId("1")), eq("McDonalds Colombia"));
+        verify(updateFranchiseNameUseCase).execute(eq(new FranchiseModelId(ApiTestConstants.ID_ONE)), eq(ApiTestConstants.FRANCHISE_NAME_UPDATED));
     }
 }

@@ -1,5 +1,6 @@
 package com.pragma.jamarlesf.usecase.updatefranchisename;
 
+import com.pragma.jamarlesf.model.constant.ErrorMessageConstants;
 import com.pragma.jamarlesf.model.exception.FranchiseNotFoundException;
 import com.pragma.jamarlesf.model.exception.InvalidFranchiseNameException;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
@@ -17,7 +18,7 @@ public class UpdateFranchiseNameUseCase {
         return Mono.justOrEmpty(newName)
                 .map(String::trim)
                 .filter(name -> !name.isEmpty())
-                .switchIfEmpty(Mono.error(new InvalidFranchiseNameException("Franchise name cannot be empty or null")))
+                .switchIfEmpty(Mono.error(new InvalidFranchiseNameException()))
                 .flatMap(validName -> findFranchiseById(franchiseId)
                         .map(existingFranchise -> existingFranchise.toBuilder()
                                 .name(validName)
@@ -27,6 +28,6 @@ public class UpdateFranchiseNameUseCase {
 
     private Mono<FranchiseModel> findFranchiseById(FranchiseModelId franchiseId) {
         return franchiseModelRepository.findById(franchiseId)
-                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(franchiseId != null ? franchiseId.value() : "null")));
+                .switchIfEmpty(Mono.error(new FranchiseNotFoundException(franchiseId != null ? franchiseId.value() : ErrorMessageConstants.NULL_ID_VALUE)));
     }
 }
