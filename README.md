@@ -117,7 +117,7 @@ deployment/terraform/
 │   ├── rds/             # PostgreSQL 16 RDS instance in isolated subnets (multi_az configurable per environment)
 │   ├── alb/             # Application Load Balancer, Target Groups, Health Checks
 │   ├── ecs/             # ECS Cluster, Task Definition, Fargate Service, CPU-based Autoscaling
-│   ├── ecr/             # Container image repository (immutable tags, vulnerability scan on push)
+│   ├── ecr/             # Container image repository (mutable `latest` tag for manual deploys, vulnerability scan on push)
 │   ├── secrets/         # Secrets Manager entry for DB credentials
 │   └── security/        # Least-privilege network security groups
 └── environments/
