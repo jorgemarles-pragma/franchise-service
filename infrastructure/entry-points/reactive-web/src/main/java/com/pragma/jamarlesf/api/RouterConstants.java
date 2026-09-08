@@ -8,7 +8,18 @@ package com.pragma.jamarlesf.api;
 @SuppressWarnings("java:S1075")
 public final class RouterConstants {
     
+    // Path Variables
+    public static final String PATH_VAR_FRANCHISE_ID = "franchiseId";
+    public static final String PATH_VAR_BRANCH_ID = "branchId";
+    public static final String PATH_VAR_PRODUCT_ID = "productId";
+
+    // Base Routes
+    public static final String ROUTER_FRANCHISES = "/api/franchises";
+    public static final String ROUTER_BRANCHES = "/api/branches";
+
     // Route Paths
+    public static final String ROUTER_BRANCHES_GET_BY_ID = ROUTER_BRANCHES + "/{" + PATH_VAR_BRANCH_ID + "}";
+    public static final String ROUTER_FRANCHISES_BRANCHES = ROUTER_FRANCHISES + "/{" + PATH_VAR_FRANCHISE_ID + "}/branches";
     public static final String FRANCHISES_PATH = "/api/franchises";
     public static final String FRANCHISE_NAME_PATH = "/api/franchises/{franchiseId}/name";
     public static final String BRANCHES_PATH = "/api/franchises/{franchiseId}/branches";
@@ -19,11 +30,6 @@ public final class RouterConstants {
     public static final String PRODUCT_NAME_PATH = "/api/products/{productId}/name";
     public static final String FRANCHISE_HIGHEST_STOCK_PRODUCTS_PATH = "/api/franchises/{franchiseId}/max-stock-products";
 
-    // Path Variables
-    public static final String PATH_VAR_FRANCHISE_ID = "franchiseId";
-    public static final String PATH_VAR_BRANCH_ID = "branchId";
-    public static final String PATH_VAR_PRODUCT_ID = "productId";
-
     // Swagger Tags
     public static final String TAG_FRANCHISES = "Franchises";
     public static final String TAG_BRANCHES = "Branches";
@@ -31,6 +37,7 @@ public final class RouterConstants {
 
     // Media Types
     public static final String APPLICATION_JSON = "application/json";
+    public static final String APPLICATION_NDJSON = "application/x-ndjson";
 
     private RouterConstants() {
         // Private constructor to prevent instantiation

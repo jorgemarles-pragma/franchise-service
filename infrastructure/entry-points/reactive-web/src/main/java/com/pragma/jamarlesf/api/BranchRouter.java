@@ -7,6 +7,7 @@ import com.pragma.jamarlesf.api.dto.response.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -20,11 +21,15 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import static com.pragma.jamarlesf.api.RouterConstants.APPLICATION_JSON;
+import static com.pragma.jamarlesf.api.RouterConstants.APPLICATION_NDJSON;
 import static com.pragma.jamarlesf.api.RouterConstants.BRANCHES_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.BRANCH_NAME_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_BRANCH_ID;
 import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.ROUTER_BRANCHES_GET_BY_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.ROUTER_FRANCHISES_BRANCHES;
 import static com.pragma.jamarlesf.api.RouterConstants.TAG_BRANCHES;
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.PATCH;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
@@ -92,10 +97,56 @@ public class BranchRouter {
                                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = ROUTER_BRANCHES_GET_BY_ID,
+                    produces = {APPLICATION_JSON},
+                    method = RequestMethod.GET,
+                    beanClass = BranchHandler.class,
+                    beanMethod = "getBranchById",
+                    operation = @Operation(
+                            operationId = "getBranchById",
+                            summary = "Get branch by id",
+                            description = "Retrieves a branch by its unique identifier",
+                            tags = {TAG_BRANCHES},
+                            parameters = {
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_BRANCH_ID, description = "Branch identifier", required = true)
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "Branch retrieved successfully",
+                                            content = @Content(schema = @Schema(implementation = BranchResponse.class))),
+                                    @ApiResponse(responseCode = "404", description = "Branch not found",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = ROUTER_FRANCHISES_BRANCHES,
+                    produces = {APPLICATION_NDJSON},
+                    method = RequestMethod.GET,
+                    beanClass = BranchHandler.class,
+                    beanMethod = "getBranchesByFranchise",
+                    operation = @Operation(
+                            operationId = "getBranchesByFranchise",
+                            summary = "Get all branches by franchise id",
+                            description = "Streams all branches associated with a franchise using newline-delimited JSON (NDJSON)",
+                            tags = {TAG_BRANCHES},
+                            parameters = {
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_FRANCHISE_ID, description = "Franchise identifier", required = true)
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "Branches stream",
+                                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = BranchResponse.class)))),
+                                    @ApiResponse(responseCode = "404", description = "Franchise not found",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> branchRouterFunction(BranchHandler handler) {
         return route(POST(BRANCHES_PATH), handler::addBranch)
-                .andRoute(PATCH(BRANCH_NAME_PATH), handler::updateBranchName);
+                .andRoute(PATCH(BRANCH_NAME_PATH), handler::updateBranchName)
+                .andRoute(GET(ROUTER_BRANCHES_GET_BY_ID), handler::getBranchById)
+                .andRoute(GET(ROUTER_FRANCHISES_BRANCHES), handler::getBranchesByFranchise);
     }
 }
