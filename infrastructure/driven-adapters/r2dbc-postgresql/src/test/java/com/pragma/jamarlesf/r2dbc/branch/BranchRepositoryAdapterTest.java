@@ -121,4 +121,16 @@ class BranchRepositoryAdapterTest {
         StepVerifier.create(adapter.findById((BranchModelId) null))
                 .verifyComplete();
     }
+
+    @Test
+    void mustReturnEmptyWhenIdIsBlank() {
+        StepVerifier.create(adapter.findById(new BranchModelId("   ")))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdIsNonNumeric() {
+        StepVerifier.create(adapter.findById(new BranchModelId("xyz")))
+                .verifyComplete();
+    }
 }

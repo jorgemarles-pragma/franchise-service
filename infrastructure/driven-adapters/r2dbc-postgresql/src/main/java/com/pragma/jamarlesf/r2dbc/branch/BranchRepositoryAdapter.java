@@ -32,9 +32,11 @@ public class BranchRepositoryAdapter
 
     @Override
     public Mono<BranchModel> findById(BranchModelId id) {
-        if (id == null || id.value() == null || id.value().isBlank()) {
-            return Mono.empty();
-        }
-        return this.findById(Long.valueOf(id.value()));
+        return Mono.justOrEmpty(id)
+                .map(BranchModelId::value)
+                .filter(val -> val != null && !val.isBlank())
+                .map(Long::valueOf)
+                .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
+                .flatMap(this::findById);
     }
 }

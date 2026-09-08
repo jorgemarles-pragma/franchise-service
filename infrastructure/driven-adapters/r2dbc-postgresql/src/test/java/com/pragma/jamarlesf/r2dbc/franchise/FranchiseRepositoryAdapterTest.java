@@ -113,4 +113,16 @@ class FranchiseRepositoryAdapterTest {
         StepVerifier.create(adapter.findById((com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId) null))
                 .verifyComplete();
     }
+
+    @Test
+    void mustReturnEmptyWhenIdIsBlank() {
+        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId("  ")))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdIsNonNumeric() {
+        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId("abc")))
+                .verifyComplete();
+    }
 }
