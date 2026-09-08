@@ -47,13 +47,10 @@ La infraestructura está provisionada y accesible públicamente a través del Ap
 
 ## 📮 Pruebas con Postman
 
-El repositorio incluye la colección completa y **dos entornos listos para importar** en Postman:
-
-1. **Colección**: [`FranchiseService.postman_collection.json`](./FranchiseService.postman_collection.json) (contiene los 9 endpoints ordenados con ejemplos).
-2. **Ambiente AWS Staging**: [`FranchiseService.staging.postman_environment.json`](./FranchiseService.staging.postman_environment.json) (`baseUrl` = ALB en AWS).
-3. **Ambiente Local**: [`FranchiseService.local.postman_environment.json`](./FranchiseService.local.postman_environment.json) (`baseUrl` = `http://localhost:8080`).
-
-> Para probar en AWS, importa la colección, el ambiente de Staging y selecciona **"Franchise Service - Staging (AWS)"** en el selector de entornos de Postman.
+La colección y los entornos de Postman para probar los 9 endpoints se encuentran en la carpeta `postman/` en la raíz del proyecto.
+Para ejecutarlos:
+1. Importa la colección y el ambiente deseado (`Local` o `Staging`) en Postman.
+2. Selecciona el ambiente en el selector superior derecho de Postman para resolver la variable `{{baseUrl}}`.
 
 ---
 
