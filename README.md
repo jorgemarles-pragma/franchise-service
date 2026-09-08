@@ -113,11 +113,13 @@ The cloud infrastructure is located in `deployment/terraform/`:
 ```text
 deployment/terraform/
 ├── modules/
-│   ├── vpc/             # Custom VPC, Public/Private Subnets, NAT Gateway, Route Tables
-│   ├── rds/             # Multi-AZ PostgreSQL 16 RDS instance in isolated subnets
+│   ├── networking/      # Custom VPC, Public/Private Subnets, NAT Gateway, Route Tables
+│   ├── rds/             # PostgreSQL 16 RDS instance in isolated subnets (multi_az configurable per environment)
 │   ├── alb/             # Application Load Balancer, Target Groups, Health Checks
-│   ├── ecs/             # ECS Cluster, Task Definition, Fargate Service, Autoscaling
-│   └── security_groups/ # Least-privilege network security groups
+│   ├── ecs/             # ECS Cluster, Task Definition, Fargate Service, CPU-based Autoscaling
+│   ├── ecr/             # Container image repository (immutable tags, vulnerability scan on push)
+│   ├── secrets/         # Secrets Manager entry for DB credentials
+│   └── security/        # Least-privilege network security groups
 └── environments/
     └── staging/         # Staging environment definition and S3 remote state configuration
 ```
