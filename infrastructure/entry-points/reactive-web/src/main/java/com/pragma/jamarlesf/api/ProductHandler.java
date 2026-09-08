@@ -4,12 +4,15 @@ import com.pragma.jamarlesf.api.dto.request.ProductRequest;
 import com.pragma.jamarlesf.api.dto.request.UpdateProductStockRequest;
 import com.pragma.jamarlesf.api.dto.response.ProductResponse;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
+import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.usecase.addproducttobranch.AddProductToBranchUseCase;
+import com.pragma.jamarlesf.usecase.gethigheststockproductsbyfranchise.GetHighestStockProductsByFranchiseUseCase;
 import com.pragma.jamarlesf.usecase.modifyproductstock.ModifyProductStockUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -21,6 +24,8 @@ public class ProductHandler {
 
     private final AddProductToBranchUseCase addProductToBranchUseCase;
     private final ModifyProductStockUseCase modifyProductStockUseCase;
+    private final GetHighestStockProductsByFranchiseUseCase getHighestStockProductsByFranchiseUseCase;
+
 
     public Mono<ServerResponse> addProduct(ServerRequest request) {
         String branchId = request.pathVariable("branchId");
@@ -55,4 +60,21 @@ public class ProductHandler {
                         .ok()
                         .bodyValue(response));
     }
+
+    public Mono<ServerResponse> getHighestStockProducts(ServerRequest request) {
+        String franchiseId = request.pathVariable("franchiseId");
+        return getHighestStockProductsByFranchiseUseCase.execute(new FranchiseModelId(franchiseId))
+                .map(product -> ProductResponse.builder()
+                        .id(product.getId() != null ? product.getId().value() : null)
+                        .name(product.getName())
+                        .stock(product.getStock())
+                        .branchId(product.getBranchId() != null ? product.getBranchId().value() : null)
+                        .build())
+                .collectList()
+                .flatMap(responses -> ServerResponse
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(responses));
+    }
 }
+

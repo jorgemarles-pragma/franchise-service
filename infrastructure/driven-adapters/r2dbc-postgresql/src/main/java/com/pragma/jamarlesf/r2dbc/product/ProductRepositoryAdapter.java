@@ -1,11 +1,13 @@
 package com.pragma.jamarlesf.r2dbc.product;
 
+import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.productmodel.ProductModel;
 import com.pragma.jamarlesf.model.productmodel.ProductModelId;
 import com.pragma.jamarlesf.model.productmodel.gateways.ProductModelRepository;
 import com.pragma.jamarlesf.r2dbc.helper.ReactiveAdapterOperations;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -44,4 +46,16 @@ public class ProductRepositoryAdapter
     public Mono<ProductModel> update(ProductModel product) {
         return this.save(product);
     }
+
+    @Override
+    public Flux<ProductModel> findHighestStockByFranchiseId(FranchiseModelId franchiseId) {
+        return Mono.justOrEmpty(franchiseId)
+                .map(FranchiseModelId::value)
+                .filter(val -> val != null && !val.isBlank())
+                .map(Long::valueOf)
+                .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
+                .flatMapMany(repository::findHighestStockByFranchiseId)
+                .map(productMapper::toModel);
+    }
 }
+
