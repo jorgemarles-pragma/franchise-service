@@ -133,4 +133,34 @@ class BranchRepositoryAdapterTest {
         StepVerifier.create(adapter.findById(new BranchModelId("xyz")))
                 .verifyComplete();
     }
+
+    @Test
+    void mustUpdateBranchSuccessfully() {
+        BranchModel inputModel = BranchModel.builder()
+                .id(new BranchModelId("10"))
+                .name("Sucursal Poblado Actualizada")
+                .franchiseId(new FranchiseModelId("1"))
+                .build();
+
+        BranchData savedData = BranchData.builder()
+                .id(10L)
+                .name("Sucursal Poblado Actualizada")
+                .franchiseId(1L)
+                .build();
+
+        when(repository.save(any(BranchData.class))).thenReturn(Mono.just(savedData));
+
+        StepVerifier.create(adapter.update(inputModel))
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertNotNull(result.getId());
+                    assertEquals("10", result.getId().value());
+                    assertEquals("Sucursal Poblado Actualizada", result.getName());
+                    assertNotNull(result.getFranchiseId());
+                    assertEquals("1", result.getFranchiseId().value());
+                })
+                .verifyComplete();
+
+        verify(repository).save(any(BranchData.class));
+    }
 }
