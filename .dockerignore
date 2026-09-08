@@ -1,0 +1,32 @@
+# Version Control
+.git/
+.gitignore
+
+# Gradle build directories & caches
+.gradle/
+build/
+build-cache/
+**/build/
+**/.gradle/
+
+# IDE configurations
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Sensitive data and environment files (Never bake into Docker image)
+.env
+.env.*
+*.pem
+*.key
+*.p12
+
+# Documentation, reports, and local assets
+*.md
+*.pdf
+*.log
+*.postman_collection.json
+Dockerfile*
+.dockerignore

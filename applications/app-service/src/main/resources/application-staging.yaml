@@ -1,0 +1,42 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: "Franchise"
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  devtools:
+    add-properties: false
+  h2:
+    console:
+      enabled: false
+
+# Reactive Database Configuration (R2DBC) for Staging
+# In AWS ECS Fargate, these values MUST be injected dynamically from AWS Secrets Manager
+adapters:
+  r2dbc:
+    host: "${DB_HOST}"
+    port: "${DB_PORT:5432}"
+    database: "${DB_NAME}"
+    schema: "${DB_SCHEMA:public}"
+    username: "${DB_USER}"
+    password: "${DB_PASSWORD}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus,info"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+
+logging:
+  level:
+    root: INFO
+    com.pragma.jamarlesf: INFO
+    org.springframework.data.r2dbc: WARN
