@@ -4,6 +4,7 @@ import com.pragma.jamarlesf.model.branchmodel.BranchModel;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.branchmodel.gateways.BranchModelRepository;
 import com.pragma.jamarlesf.r2dbc.helper.ReactiveAdapterOperations;
+import com.pragma.jamarlesf.r2dbc.helper.ResilienceOperators;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
@@ -14,10 +15,16 @@ public class BranchRepositoryAdapter
         implements BranchModelRepository {
 
     private final BranchMapper branchMapper;
+    private final ResilienceOperators resilienceOperators;
 
-    public BranchRepositoryAdapter(BranchReactiveRepository repository, ObjectMapper mapper, BranchMapper branchMapper) {
+    public BranchRepositoryAdapter(BranchReactiveRepository repository, ObjectMapper mapper, BranchMapper branchMapper, ResilienceOperators resilienceOperators) {
         super(repository, mapper, branchMapper::toModel);
         this.branchMapper = branchMapper;
+        this.resilienceOperators = resilienceOperators;
+    }
+
+    public BranchRepositoryAdapter(BranchReactiveRepository repository, ObjectMapper mapper, BranchMapper branchMapper) {
+        this(repository, mapper, branchMapper, ResilienceOperators.defaultInstance());
     }
 
     @Override
@@ -27,21 +34,23 @@ public class BranchRepositoryAdapter
 
     @Override
     public Mono<BranchModel> create(BranchModel branch) {
-        return this.save(branch);
+        return resilienceOperators.apply(this.save(branch));
     }
 
     @Override
     public Mono<BranchModel> findById(BranchModelId id) {
-        return Mono.justOrEmpty(id)
-                .map(BranchModelId::value)
-                .filter(val -> !val.isBlank())
-                .map(Long::valueOf)
-                .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
-                .flatMap(this::findById);
+        return resilienceOperators.apply(
+                Mono.justOrEmpty(id)
+                        .map(BranchModelId::value)
+                        .filter(val -> !val.isBlank())
+                        .map(Long::valueOf)
+                        .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
+                        .flatMap(this::findById)
+        );
     }
 
     @Override
     public Mono<BranchModel> update(BranchModel branch) {
-        return this.save(branch);
+        return resilienceOperators.apply(this.save(branch));
     }
 }
