@@ -35,6 +35,40 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "2. Sucursales",
+			"item": [
+				{
+					"name": "Agregar Sucursal a Franquicia",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Sucursal Medellín\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/franchises/1/branches",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"franchises",
+								"1",
+								"branches"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
