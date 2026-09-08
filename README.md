@@ -1,4 +1,4 @@
-# 🏢 API de Franquicias (Franchise Service) — Reto Técnico Nequi
+# 🏢 API de Franquicias (Franchise Service)
 
 [![Java 17](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -8,7 +8,7 @@
 [![Terraform](https://img.shields.io/badge/IaC-Terraform%20AWS-623CE4.svg)](https://www.terraform.io/)
 [![Clean Architecture](https://img.shields.io/badge/Architecture-Hexagonal%20%28Bancolombia%29-yellow.svg)](https://bancolombia.github.io/scaffold-clean-architecture/)
 
-API REST **100% reactiva y no bloqueante** para la administración de franquicias, sucursales y productos. Diseñada bajo los pilares de evaluación técnica de **Nequi**:
+API REST **100% reactiva y no bloqueante** para la administración de franquicias, sucursales y productos. Diseñada bajo los pilares:
 - **Pilar 1 (Reactivo)**: Spring WebFlux con `RouterFunction` y `HandlerFunction` (cero `@RestController`, cero `.block()`, operadores nativos de Reactor).
 - **Pilar 2 (Arquitectura)**: Hexagonal con Scaffold Bancolombia (dominio puro, DTOs como `record`, inmutabilidad y pruebas ArchUnit).
 - **Pilar 3 (Resiliencia)**: Resilience4j completo (**Timeout 3s** + **Retry con backoff exponencial** + **CircuitBreaker**).
