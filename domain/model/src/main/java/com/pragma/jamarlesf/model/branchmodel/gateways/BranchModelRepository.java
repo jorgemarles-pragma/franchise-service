@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface BranchModelRepository {
     Mono<BranchModel> create(BranchModel branch);
     Mono<BranchModel> findById(BranchModelId id);
+    Mono<BranchModel> update(BranchModel branch);
 }

@@ -2,6 +2,7 @@ package com.pragma.jamarlesf.api;
 
 import com.pragma.jamarlesf.model.exception.BranchNotFoundException;
 import com.pragma.jamarlesf.model.exception.FranchiseNotFoundException;
+import com.pragma.jamarlesf.model.exception.InvalidBranchNameException;
 import com.pragma.jamarlesf.model.exception.InvalidFranchiseNameException;
 import com.pragma.jamarlesf.model.exception.InvalidProductStockException;
 import com.pragma.jamarlesf.model.exception.ProductNotFoundException;
@@ -50,6 +51,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidFranchiseNameException.class)
     public Mono<ResponseEntity<Map<String, String>>> handleInvalidFranchiseNameException(InvalidFranchiseNameException ex) {
+        return Mono.just(
+                ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", ex.getMessage()))
+        );
+    }
+
+    @ExceptionHandler(InvalidBranchNameException.class)
+    public Mono<ResponseEntity<Map<String, String>>> handleInvalidBranchNameException(InvalidBranchNameException ex) {
         return Mono.just(
                 ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("error", ex.getMessage()))

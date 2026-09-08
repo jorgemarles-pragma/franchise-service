@@ -39,4 +39,9 @@ public class BranchRepositoryAdapter
                 .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
                 .flatMap(this::findById);
     }
+
+    @Override
+    public Mono<BranchModel> update(BranchModel branch) {
+        return this.save(branch);
+    }
 }

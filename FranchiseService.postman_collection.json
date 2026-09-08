@@ -116,6 +116,35 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Actualizar Nombre de Sucursal",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Sucursal Medellín Poblado\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/branches/1/name",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"branches",
+								"1",
+								"name"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
