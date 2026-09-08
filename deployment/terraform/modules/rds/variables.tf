@@ -31,12 +31,6 @@ variable "db_user" {
   default     = "franchise_app_user"
 }
 
-variable "db_password" {
-  type        = string
-  description = "Master password"
-  sensitive   = true
-}
-
 variable "instance_class" {
   type        = string
   description = "RDS instance class"

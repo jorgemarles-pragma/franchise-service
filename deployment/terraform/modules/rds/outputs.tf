@@ -17,3 +17,9 @@ output "db_name" {
   description = "Database name"
   value       = aws_db_instance.postgres.db_name
 }
+
+output "password" {
+  description = "Auto-generated master password"
+  value       = random_password.master.result
+  sensitive   = true
+}
