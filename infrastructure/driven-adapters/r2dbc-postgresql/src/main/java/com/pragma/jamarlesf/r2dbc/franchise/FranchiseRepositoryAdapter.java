@@ -1,6 +1,7 @@
 package com.pragma.jamarlesf.r2dbc.franchise;
 
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
+import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.franchisemodel.gateways.FranchiseModelRepository;
 import com.pragma.jamarlesf.r2dbc.helper.ReactiveAdapterOperations;
 import org.reactivecommons.utils.ObjectMapper;
@@ -27,5 +28,13 @@ public class FranchiseRepositoryAdapter
     @Override
     public Mono<FranchiseModel> create(FranchiseModel franchise) {
         return this.save(franchise);
+    }
+
+    @Override
+    public Mono<FranchiseModel> findById(FranchiseModelId id) {
+        if (id == null || id.value() == null || id.value().isBlank()) {
+            return Mono.empty();
+        }
+        return this.findById(Long.valueOf(id.value()));
     }
 }

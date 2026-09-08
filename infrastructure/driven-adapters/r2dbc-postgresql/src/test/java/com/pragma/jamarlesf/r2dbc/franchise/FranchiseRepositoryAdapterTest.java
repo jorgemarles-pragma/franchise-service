@@ -1,6 +1,7 @@
 package com.pragma.jamarlesf.r2dbc.franchise;
 
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
+import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,5 +76,41 @@ class FranchiseRepositoryAdapterTest {
                 .verify();
 
         verify(repository).save(any(FranchiseData.class));
+    }
+
+    @Test
+    void mustFindFranchiseByIdSuccessfully() {
+        FranchiseData foundData = FranchiseData.builder()
+                .id(1L)
+                .name("Franquicia Existente")
+                .build();
+
+        when(repository.findById(1L)).thenReturn(Mono.just(foundData));
+
+        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId("1")))
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals("1", result.getId().value());
+                    assertEquals("Franquicia Existente", result.getName());
+                })
+                .verifyComplete();
+
+        verify(repository).findById(1L);
+    }
+
+    @Test
+    void mustReturnEmptyWhenFranchiseNotFound() {
+        when(repository.findById(999L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId("999")))
+                .verifyComplete();
+
+        verify(repository).findById(999L);
+    }
+
+    @Test
+    void mustReturnEmptyWhenIdIsNull() {
+        StepVerifier.create(adapter.findById((com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId) null))
+                .verifyComplete();
     }
 }
