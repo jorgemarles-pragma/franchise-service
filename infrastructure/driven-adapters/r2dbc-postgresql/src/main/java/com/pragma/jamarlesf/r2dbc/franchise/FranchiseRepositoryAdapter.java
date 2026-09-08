@@ -4,6 +4,7 @@ import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.model.franchisemodel.gateways.FranchiseModelRepository;
 import com.pragma.jamarlesf.r2dbc.helper.ReactiveAdapterOperations;
+import com.pragma.jamarlesf.r2dbc.helper.ResilienceOperators;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
@@ -14,10 +15,16 @@ public class FranchiseRepositoryAdapter
         implements FranchiseModelRepository {
 
     private final FranchiseMapper franchiseMapper;
+    private final ResilienceOperators resilienceOperators;
 
-    public FranchiseRepositoryAdapter(FranchiseReactiveRepository repository, ObjectMapper mapper, FranchiseMapper franchiseMapper) {
+    public FranchiseRepositoryAdapter(FranchiseReactiveRepository repository, ObjectMapper mapper, FranchiseMapper franchiseMapper, ResilienceOperators resilienceOperators) {
         super(repository, mapper, franchiseMapper::toModel);
         this.franchiseMapper = franchiseMapper;
+        this.resilienceOperators = resilienceOperators;
+    }
+
+    public FranchiseRepositoryAdapter(FranchiseReactiveRepository repository, ObjectMapper mapper, FranchiseMapper franchiseMapper) {
+        this(repository, mapper, franchiseMapper, ResilienceOperators.defaultInstance());
     }
 
     @Override
@@ -27,21 +34,23 @@ public class FranchiseRepositoryAdapter
 
     @Override
     public Mono<FranchiseModel> create(FranchiseModel franchise) {
-        return this.save(franchise);
+        return resilienceOperators.apply(this.save(franchise));
     }
 
     @Override
     public Mono<FranchiseModel> findById(FranchiseModelId id) {
-        return Mono.justOrEmpty(id)
-                .map(FranchiseModelId::value)
-                .filter(val -> !val.isBlank())
-                .map(Long::valueOf)
-                .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
-                .flatMap(this::findById);
+        return resilienceOperators.apply(
+                Mono.justOrEmpty(id)
+                        .map(FranchiseModelId::value)
+                        .filter(val -> !val.isBlank())
+                        .map(Long::valueOf)
+                        .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
+                        .flatMap(this::findById)
+        );
     }
 
     @Override
     public Mono<FranchiseModel> update(FranchiseModel franchise) {
-        return this.save(franchise);
+        return resilienceOperators.apply(this.save(franchise));
     }
 }
