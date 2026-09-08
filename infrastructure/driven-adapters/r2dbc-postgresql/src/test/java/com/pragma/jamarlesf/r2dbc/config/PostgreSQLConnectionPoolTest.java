@@ -1,5 +1,6 @@
 package com.pragma.jamarlesf.r2dbc.config;
 
+import io.r2dbc.pool.ConnectionPool;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -7,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class PostgreSQLConnectionPoolTest {
@@ -33,5 +35,11 @@ class PostgreSQLConnectionPoolTest {
     @Test
     void getConnectionConfigSuccess() {
         assertNotNull(connectionPool.getConnectionConfig(properties));
+    }
+
+    @Test
+    void initializerSuccess() {
+        ConnectionPool pool = mock(ConnectionPool.class);
+        assertNotNull(connectionPool.initializer(pool));
     }
 }
