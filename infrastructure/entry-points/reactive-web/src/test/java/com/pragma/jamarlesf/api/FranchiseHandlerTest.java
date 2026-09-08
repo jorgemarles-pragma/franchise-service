@@ -6,6 +6,8 @@ import com.pragma.jamarlesf.api.dto.request.UpdateFranchiseNameRequest;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.usecase.createfranchise.CreateFranchiseUseCase;
+import com.pragma.jamarlesf.usecase.getallfranchises.GetAllFranchisesUseCase;
+import com.pragma.jamarlesf.usecase.getfranchisebyid.GetFranchiseByIdUseCase;
 import com.pragma.jamarlesf.usecase.updatefranchisename.UpdateFranchiseNameUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,8 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -36,13 +40,19 @@ class FranchiseHandlerTest {
     private UpdateFranchiseNameUseCase updateFranchiseNameUseCase;
 
     @Mock
+    private GetFranchiseByIdUseCase getFranchiseByIdUseCase;
+
+    @Mock
+    private GetAllFranchisesUseCase getAllFranchisesUseCase;
+
+    @Mock
     private ServerRequest serverRequest;
 
     private FranchiseHandler franchiseHandler;
 
     @BeforeEach
     void setUp() {
-        franchiseHandler = new FranchiseHandler(createFranchiseUseCase, updateFranchiseNameUseCase);
+        franchiseHandler = new FranchiseHandler(createFranchiseUseCase, updateFranchiseNameUseCase, getFranchiseByIdUseCase, getAllFranchisesUseCase);
     }
 
     @Test
@@ -96,5 +106,58 @@ class FranchiseHandlerTest {
         verify(serverRequest).pathVariable(PATH_VAR_FRANCHISE_ID);
         verify(serverRequest).bodyToMono(UpdateFranchiseNameRequest.class);
         verify(updateFranchiseNameUseCase).execute(new FranchiseModelId(ApiTestConstants.ID_ONE), ApiTestConstants.FRANCHISE_NAME_UPDATED);
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 200 when franchise is retrieved by id successfully")
+    void shouldReturn200WhenFranchiseIsRetrievedByIdSuccessfully() {
+        FranchiseModel franchise = FranchiseModel.builder()
+                .id(new FranchiseModelId(ApiTestConstants.ID_ONE))
+                .name(ApiTestConstants.FRANCHISE_NAME_DEFAULT)
+                .build();
+
+        when(serverRequest.pathVariable(PATH_VAR_FRANCHISE_ID)).thenReturn(ApiTestConstants.ID_ONE);
+        when(getFranchiseByIdUseCase.execute(new FranchiseModelId(ApiTestConstants.ID_ONE)))
+                .thenReturn(Mono.just(franchise));
+
+        Mono<ServerResponse> responseMono = franchiseHandler.getFranchiseById(serverRequest);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(HttpStatus.OK, response.statusCode());
+                    assertEquals(MediaType.APPLICATION_JSON, response.headers().getContentType());
+                })
+                .verifyComplete();
+
+        verify(serverRequest).pathVariable(PATH_VAR_FRANCHISE_ID);
+        verify(getFranchiseByIdUseCase).execute(new FranchiseModelId(ApiTestConstants.ID_ONE));
+    }
+
+    @Test
+    @DisplayName("Should return HTTP 200 with NDJSON when all franchises are retrieved successfully")
+    void shouldReturn200WithNdjsonWhenAllFranchisesAreRetrievedSuccessfully() {
+        FranchiseModel franchise1 = FranchiseModel.builder()
+                .id(new FranchiseModelId(ApiTestConstants.ID_ONE))
+                .name(ApiTestConstants.FRANCHISE_NAME_DEFAULT)
+                .build();
+        FranchiseModel franchise2 = FranchiseModel.builder()
+                .id(new FranchiseModelId(ApiTestConstants.ID_TWO))
+                .name(ApiTestConstants.FRANCHISE_NAME_UPDATED)
+                .build();
+
+        when(getAllFranchisesUseCase.execute()).thenReturn(Flux.just(franchise1, franchise2));
+
+        Mono<ServerResponse> responseMono = franchiseHandler.getAllFranchises(serverRequest);
+
+        StepVerifier.create(responseMono)
+                .assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(HttpStatus.OK, response.statusCode());
+                    assertEquals(MediaType.APPLICATION_NDJSON, response.headers().getContentType());
+                })
+                .verifyComplete();
+
+        verify(getAllFranchisesUseCase).execute();
     }
 }

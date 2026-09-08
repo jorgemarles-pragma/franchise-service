@@ -7,6 +7,7 @@ import com.pragma.jamarlesf.r2dbc.helper.ReactiveAdapterOperations;
 import com.pragma.jamarlesf.r2dbc.helper.ResilienceOperators;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -48,5 +49,12 @@ public class FranchiseRepositoryAdapter
     @Override
     public Mono<FranchiseModel> update(FranchiseModel franchise) {
         return resilienceOperators.apply(this.save(franchise));
+    }
+
+    @Override
+    public Flux<FranchiseModel> findAll() {
+        return resilienceOperators.apply(
+                repository.findAll().map(franchiseMapper::toModel)
+        );
     }
 }

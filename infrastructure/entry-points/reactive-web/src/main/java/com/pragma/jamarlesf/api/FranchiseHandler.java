@@ -6,12 +6,16 @@ import com.pragma.jamarlesf.api.dto.response.FranchiseResponse;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModel;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.usecase.createfranchise.CreateFranchiseUseCase;
+import com.pragma.jamarlesf.usecase.getallfranchises.GetAllFranchisesUseCase;
+import com.pragma.jamarlesf.usecase.getfranchisebyid.GetFranchiseByIdUseCase;
 import com.pragma.jamarlesf.usecase.updatefranchisename.UpdateFranchiseNameUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
@@ -22,6 +26,8 @@ public class FranchiseHandler {
 
     private final CreateFranchiseUseCase createFranchiseUseCase;
     private final UpdateFranchiseNameUseCase updateFranchiseNameUseCase;
+    private final GetFranchiseByIdUseCase getFranchiseByIdUseCase;
+    private final GetAllFranchisesUseCase getAllFranchisesUseCase;
 
     public Mono<ServerResponse> createFranchise(ServerRequest request) {
         return request.bodyToMono(FranchiseRequest.class)
@@ -49,5 +55,30 @@ public class FranchiseHandler {
                 .flatMap(response -> ServerResponse
                         .ok()
                         .bodyValue(response));
+    }
+
+    public Mono<ServerResponse> getFranchiseById(ServerRequest request) {
+        String franchiseId = request.pathVariable(PATH_VAR_FRANCHISE_ID);
+        return getFranchiseByIdUseCase.execute(new FranchiseModelId(franchiseId))
+                .map(franchise -> FranchiseResponse.builder()
+                        .id(franchise.getId() != null ? franchise.getId().value() : null)
+                        .name(franchise.getName())
+                        .build())
+                .flatMap(response -> ServerResponse
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(response));
+    }
+
+    public Mono<ServerResponse> getAllFranchises(ServerRequest request) {
+        Flux<FranchiseResponse> responseFlux = getAllFranchisesUseCase.execute()
+                .map(franchise -> FranchiseResponse.builder()
+                        .id(franchise.getId() != null ? franchise.getId().value() : null)
+                        .name(franchise.getName())
+                        .build());
+        return ServerResponse
+                .ok()
+                .contentType(MediaType.APPLICATION_NDJSON)
+                .body(responseFlux, FranchiseResponse.class);
     }
 }

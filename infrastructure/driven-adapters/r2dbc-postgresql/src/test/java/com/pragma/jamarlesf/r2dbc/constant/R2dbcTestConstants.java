@@ -4,6 +4,7 @@ public final class R2dbcTestConstants {
 
     // Common IDs (Long & String)
     public static final Long ID_ONE_LONG = 1L;
+    public static final Long ID_TWO_LONG = 2L;
     public static final Long ID_TEN_LONG = 10L;
     public static final Long ID_TWENTY_LONG = 20L;
     public static final Long ID_ONE_HUNDRED_LONG = 100L;

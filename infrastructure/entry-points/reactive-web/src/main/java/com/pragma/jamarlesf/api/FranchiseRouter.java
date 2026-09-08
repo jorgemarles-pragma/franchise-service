@@ -7,6 +7,7 @@ import com.pragma.jamarlesf.api.dto.response.FranchiseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -20,10 +21,14 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import static com.pragma.jamarlesf.api.RouterConstants.APPLICATION_JSON;
+import static com.pragma.jamarlesf.api.RouterConstants.APPLICATION_NDJSON;
 import static com.pragma.jamarlesf.api.RouterConstants.FRANCHISES_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.FRANCHISE_NAME_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.ROUTER_FRANCHISES;
+import static com.pragma.jamarlesf.api.RouterConstants.ROUTER_FRANCHISES_GET_BY_ID;
 import static com.pragma.jamarlesf.api.RouterConstants.TAG_FRANCHISES;
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.PATCH;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
@@ -54,6 +59,45 @@ public class FranchiseRouter {
                                     @ApiResponse(responseCode = "201", description = "Franchise created successfully",
                                             content = @Content(schema = @Schema(implementation = FranchiseResponse.class))),
                                     @ApiResponse(responseCode = "400", description = "Invalid franchise name",
+                                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = ROUTER_FRANCHISES,
+                    produces = {APPLICATION_NDJSON},
+                    method = RequestMethod.GET,
+                    beanClass = FranchiseHandler.class,
+                    beanMethod = "getAllFranchises",
+                    operation = @Operation(
+                            operationId = "getAllFranchises",
+                            summary = "Get all franchises",
+                            description = "Retrieves a stream of all registered franchises as NDJSON",
+                            tags = {TAG_FRANCHISES},
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "Franchises retrieved successfully",
+                                            content = @Content(mediaType = APPLICATION_NDJSON, array = @ArraySchema(schema = @Schema(implementation = FranchiseResponse.class))))
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = ROUTER_FRANCHISES_GET_BY_ID,
+                    produces = {APPLICATION_JSON},
+                    method = RequestMethod.GET,
+                    beanClass = FranchiseHandler.class,
+                    beanMethod = "getFranchiseById",
+                    operation = @Operation(
+                            operationId = "getFranchiseById",
+                            summary = "Get franchise by ID",
+                            description = "Retrieves the details of a franchise by its identifier",
+                            tags = {TAG_FRANCHISES},
+                            parameters = {
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_FRANCHISE_ID, description = "Franchise identifier", required = true)
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "200", description = "Franchise retrieved successfully",
+                                            content = @Content(schema = @Schema(implementation = FranchiseResponse.class))),
+                                    @ApiResponse(responseCode = "404", description = "Franchise not found",
                                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
                             }
                     )
@@ -90,6 +134,8 @@ public class FranchiseRouter {
     })
     public RouterFunction<ServerResponse> franchiseRouterFunction(FranchiseHandler handler) {
         return route(POST(FRANCHISES_PATH), handler::createFranchise)
+                .andRoute(GET(ROUTER_FRANCHISES), handler::getAllFranchises)
+                .andRoute(GET(ROUTER_FRANCHISES_GET_BY_ID), handler::getFranchiseById)
                 .andRoute(PATCH(FRANCHISE_NAME_PATH), handler::updateFranchiseName);
     }
 }
