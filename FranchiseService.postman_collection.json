@@ -35,6 +35,35 @@
 					"response": []
 				},
 				{
+					"name": "Actualizar Nombre de Franquicia",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"McDonalds Colombia\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/franchises/1/name",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"franchises",
+								"1",
+								"name"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Obtener Producto con Mayor Stock por Sucursal",
 					"request": {
 						"method": "GET",
@@ -55,7 +84,6 @@
 					"response": []
 				}
 			]
-
 		},
 		{
 			"name": "2. Sucursales",

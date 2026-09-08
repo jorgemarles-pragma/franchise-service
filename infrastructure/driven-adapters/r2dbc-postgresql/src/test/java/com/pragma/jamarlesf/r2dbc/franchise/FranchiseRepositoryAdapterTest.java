@@ -125,4 +125,30 @@ class FranchiseRepositoryAdapterTest {
         StepVerifier.create(adapter.findById(new com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId("abc")))
                 .verifyComplete();
     }
+
+    @Test
+    void mustUpdateFranchiseSuccessfully() {
+        FranchiseModel inputModel = FranchiseModel.builder()
+                .id(new FranchiseModelId("1"))
+                .name("Franquicia Nequi Actualizada")
+                .build();
+
+        FranchiseData savedData = FranchiseData.builder()
+                .id(1L)
+                .name("Franquicia Nequi Actualizada")
+                .build();
+
+        when(repository.save(any(FranchiseData.class))).thenReturn(Mono.just(savedData));
+
+        StepVerifier.create(adapter.update(inputModel))
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertNotNull(result.getId());
+                    assertEquals("1", result.getId().value());
+                    assertEquals("Franquicia Nequi Actualizada", result.getName());
+                })
+                .verifyComplete();
+
+        verify(repository).save(any(FranchiseData.class));
+    }
 }

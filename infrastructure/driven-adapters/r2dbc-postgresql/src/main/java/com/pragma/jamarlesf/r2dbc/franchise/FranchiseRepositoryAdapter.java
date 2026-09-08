@@ -39,4 +39,9 @@ public class FranchiseRepositoryAdapter
                 .onErrorResume(NumberFormatException.class, ex -> Mono.empty())
                 .flatMap(this::findById);
     }
+
+    @Override
+    public Mono<FranchiseModel> update(FranchiseModel franchise) {
+        return this.save(franchise);
+    }
 }

@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface FranchiseModelRepository {
     Mono<FranchiseModel> create(FranchiseModel franchise);
     Mono<FranchiseModel> findById(FranchiseModelId id);
+    Mono<FranchiseModel> update(FranchiseModel franchise);
 }
