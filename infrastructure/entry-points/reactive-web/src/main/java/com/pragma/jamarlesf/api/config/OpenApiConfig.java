@@ -14,7 +14,7 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Franchise Management Reactive API (Reto Nequi)")
+                        .title("Franchise Management Reactive API")
                         .version("1.0.0")
                         .description("Non-blocking Reactive REST API for franchise, branch, and product management " +
                                 "built with Spring WebFlux Functional, R2DBC PostgreSQL, and Resilience4j.")

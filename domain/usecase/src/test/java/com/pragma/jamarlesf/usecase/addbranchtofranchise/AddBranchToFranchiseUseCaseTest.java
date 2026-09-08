@@ -50,12 +50,12 @@ class AddBranchToFranchiseUseCaseTest {
                 .build();
 
         BranchModel inputBranch = BranchModel.builder()
-                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTH)
                 .build();
 
         BranchModel createdBranch = BranchModel.builder()
                 .id(new BranchModelId(UseCaseTestConstants.ID_TEN))
-                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTH)
                 .franchiseId(franchiseId)
                 .build();
 
@@ -66,7 +66,7 @@ class AddBranchToFranchiseUseCaseTest {
                 .assertNext(result -> {
                     assertNotNull(result);
                     assertEquals(UseCaseTestConstants.ID_TEN, result.getId().value());
-                    assertEquals(UseCaseTestConstants.BRANCH_NAME_NORTE, result.getName());
+                    assertEquals(UseCaseTestConstants.BRANCH_NAME_NORTH, result.getName());
                     assertEquals(UseCaseTestConstants.ID_ONE, result.getFranchiseId().value());
                 })
                 .verifyComplete();

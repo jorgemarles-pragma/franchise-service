@@ -21,18 +21,18 @@ public final class UseCaseTestConstants {
     // Branch Names
     public static final String BRANCH_NAME_DOWNTOWN = "Downtown Branch";
     public static final String BRANCH_NAME_UPTOWN = "Uptown Branch";
-    public static final String BRANCH_NAME_NORTE = "Sucursal Norte";
+    public static final String BRANCH_NAME_NORTH = "North Branch";
     public static final String BRANCH_NAME_OLD = "Old Branch Name";
     public static final String BRANCH_NAME_NEW = "New Branch Name";
-    public static final String BRANCH_NAME_WITH_SPACES = "  Sucursal Norte  ";
+    public static final String BRANCH_NAME_WITH_SPACES = "  North Branch  ";
 
     // Product Names
-    public static final String PRODUCT_NAME_BURGER = "Hamburguesa Doble";
-    public static final String PRODUCT_NAME_FRIES = "Papas Fritas";
-    public static final String PRODUCT_NAME_SODA = "Gaseosa";
+    public static final String PRODUCT_NAME_BURGER = "Double Burger";
+    public static final String PRODUCT_NAME_FRIES = "French Fries";
+    public static final String PRODUCT_NAME_SODA = "Soda";
     public static final String PRODUCT_NAME_OLD = "Old Product Name";
     public static final String PRODUCT_NAME_NEW = "New Product Name";
-    public static final String PRODUCT_NAME_WITH_SPACES = "  Hamburguesa Doble  ";
+    public static final String PRODUCT_NAME_WITH_SPACES = "  Double Burger  ";
 
     // Stock Values
     public static final int STOCK_ZERO = 0;

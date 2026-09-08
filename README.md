@@ -1,101 +1,148 @@
-# 🏢 API de Franquicias (Franchise Service)
+# 🏢 Franchise Management Service
 
 [![Java 17](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Spring WebFlux](https://img.shields.io/badge/Spring-WebFlux%20Functional-blue.svg)](https://docs.spring.io/spring-framework/reference/web/webflux-functional.html)
 [![R2DBC PostgreSQL](https://img.shields.io/badge/R2DBC-PostgreSQL-336791.svg)](https://r2dbc.io/)
 [![Resilience4j](https://img.shields.io/badge/Resilience4j-CircuitBreaker%20%7C%20Retry%20%7C%20Timeout-red.svg)](https://resilience4j.readme.io/)
 [![Terraform](https://img.shields.io/badge/IaC-Terraform%20AWS-623CE4.svg)](https://www.terraform.io/)
 [![Clean Architecture](https://img.shields.io/badge/Architecture-Hexagonal%20%28Bancolombia%29-yellow.svg)](https://bancolombia.github.io/scaffold-clean-architecture/)
 
-API REST **100% reactiva y no bloqueante** para la administración de franquicias, sucursales y productos. Diseñada bajo los pilares:
-- **Pilar 1 (Reactivo)**: Spring WebFlux con `RouterFunction` y `HandlerFunction` (cero `@RestController`, cero `.block()`, operadores nativos de Reactor).
-- **Pilar 2 (Arquitectura)**: Hexagonal con Scaffold Bancolombia (dominio puro, DTOs como `record`, inmutabilidad y pruebas ArchUnit).
-- **Pilar 3 (Resiliencia)**: Resilience4j completo (**Timeout 3s** + **Retry con backoff exponencial** + **CircuitBreaker**).
-- **Pilar 4 (AWS & IaC)**: Despliegue modular en Terraform (VPC, Subnets privadas, ALB, RDS PostgreSQL 16, Secrets Manager y ECS Fargate).
+A **100% reactive, non-blocking REST API** designed for managing franchises, branches, and product inventories. Built using enterprise-grade software engineering standards:
+
+- **Reactive Core (Spring WebFlux)**: Fully non-blocking HTTP layer with `RouterFunction` and `HandlerFunction` (functional endpoints, zero `@RestController`, zero `.block()`, native Project Reactor operators).
+- **Hexagonal Architecture (Bancolombia Clean Architecture)**: Strict separation of concerns, framework-independent pure domain model, immutable DTOs using Java `record`, and automated architectural guardrails with ArchUnit.
+- **Resilience Engineering (Resilience4j)**: Production-grade fault tolerance featuring **TimeLimiter** (3s non-blocking timeout), **Retry** with exponential backoff and jitter, and **CircuitBreaker**.
+- **Infrastructure as Code (Terraform AWS)**: Fully automated cloud deployment provisioning a custom VPC, private subnets, Application Load Balancer (ALB), Amazon RDS PostgreSQL 16, AWS Secrets Manager, and AWS ECS Fargate.
 
 ---
 
-## ☁️ Entorno en Vivo (AWS Staging)
+## ☁️ Live Environment (AWS Staging)
 
-La infraestructura está provisionada y accesible públicamente a través del Application Load Balancer:
+The staging environment is provisioned and publicly accessible via the Application Load Balancer:
 
-| Servicio | URL Pública |
+| Resource | Public URL |
 |---|---|
 | **API Base URL** | `http://franchise-service-staging-alb-639543305.us-east-1.elb.amazonaws.com` |
-| **Documentación Swagger UI** | `http://franchise-service-staging-alb-639543305.us-east-1.elb.amazonaws.com/webjars/swagger-ui/index.html?url=/v3/api-docs` |
+| **Swagger UI Documentation** | `http://franchise-service-staging-alb-639543305.us-east-1.elb.amazonaws.com/webjars/swagger-ui/index.html?url=/v3/api-docs` |
 | **OpenAPI Spec (JSON)** | `http://franchise-service-staging-alb-639543305.us-east-1.elb.amazonaws.com/v3/api-docs` |
 | **Health Check (Actuator)** | `http://franchise-service-staging-alb-639543305.us-east-1.elb.amazonaws.com/actuator/health` |
 
 ---
 
-## 🚀 Matriz de Endpoints Funcionales
+## 🚀 Functional Endpoints Matrix
 
-| # | Método | Endpoint | Descripción | Body | Respuesta Exitosa |
+| # | HTTP Method | Endpoint Path | Description | Request Body | Success Status |
 |---|---|---|---|---|:---:|
-| 1 | `POST` | `/api/franchises` | Crear franquicia | `FranchiseRequest` | `201 Created` |
-| 2 | `PATCH` | `/api/franchises/{franchiseId}/name` | Actualizar nombre franquicia | `UpdateFranchiseNameRequest` | `200 OK` |
-| 3 | `POST` | `/api/franchises/{franchiseId}/branches` | Agregar sucursal | `BranchRequest` | `201 Created` |
-| 4 | `PATCH` | `/api/branches/{branchId}/name` | Actualizar nombre sucursal | `UpdateBranchNameRequest` | `200 OK` |
-| 5 | `POST` | `/api/branches/{branchId}/products` | Agregar producto | `ProductRequest` | `201 Created` |
-| 6 | `PATCH` | `/api/products/{productId}/stock` | Modificar stock producto | `UpdateProductStockRequest` | `200 OK` |
-| 7 | `PATCH` | `/api/products/{productId}/name` | Actualizar nombre producto | `UpdateProductNameRequest` | `200 OK` |
-| 8 | `DELETE` | `/api/branches/{branchId}/products/{productId}` | Eliminar producto | N/A | `204 No Content` |
-| 9 | `GET` | `/api/franchises/{franchiseId}/max-stock-products` | Mayor stock por sucursal | N/A | `200 OK` |
+| 1 | `POST` | `/api/franchises` | Create a new franchise | `FranchiseRequest` | `201 Created` |
+| 2 | `PATCH` | `/api/franchises/{franchiseId}/name` | Update franchise name | `UpdateFranchiseNameRequest` | `200 OK` |
+| 3 | `POST` | `/api/franchises/{franchiseId}/branches` | Add branch to franchise | `BranchRequest` | `201 Created` |
+| 4 | `PATCH` | `/api/branches/{branchId}/name` | Update branch name | `UpdateBranchNameRequest` | `200 OK` |
+| 5 | `POST` | `/api/branches/{branchId}/products` | Add product to branch | `ProductRequest` | `201 Created` |
+| 6 | `PATCH` | `/api/products/{productId}/stock` | Update product stock | `UpdateProductStockRequest` | `200 OK` |
+| 7 | `PATCH` | `/api/products/{productId}/name` | Update product name | `UpdateProductNameRequest` | `200 OK` |
+| 8 | `DELETE` | `/api/branches/{branchId}/products/{productId}` | Delete product from branch | N/A | `204 No Content` |
+| 9 | `GET` | `/api/franchises/{franchiseId}/max-stock-products` | Get highest stock product per branch | N/A | `200 OK` |
 
 ---
 
-## 📮 Pruebas con Postman
+## 🏛️ Architecture Overview
 
-La colección y los entornos de Postman para probar los 9 endpoints se encuentran en la carpeta `postman/` en la raíz del proyecto.
-Para ejecutarlos:
-1. Importa la colección y el ambiente deseado (`Local` o `Staging`) en Postman.
-2. Selecciona el ambiente en el selector superior derecho de Postman para resolver la variable `{{baseUrl}}`.
+The project is structured according to Hexagonal Architecture (Ports and Adapters) following the Bancolombia Clean Architecture Gradle plugin standard:
 
----
-
-## 💻 Ejecución Local
-
-### Opción 1: Docker Compose (Recomendada)
-Levanta la base de datos PostgreSQL 16 y la aplicación reactiva:
-```bash
-docker-compose up -d
+```text
+com.pragma.jamarlesf
+├── domain
+│   ├── model              # Pure business entities, domain exceptions, and gateway interfaces (no Spring dependencies)
+│   └── usecase            # Business logic orchestration and reactive workflows
+├── infrastructure
+│   ├── driven-adapters
+│   │   └── r2dbc-postgresql # Non-blocking R2DBC persistence, entity mappers, and Resilience4j decorators
+│   └── entry-points
+│       └── reactive-web     # WebFlux RouterFunctions, HandlerFunctions, DTO records, and WebExceptionHandler
+└── applications
+    └── app-service          # Spring Boot main application, configuration beans, and dependency injection wiring
 ```
 
-### Opción 2: Gradle Local
-Asegúrate de tener PostgreSQL corriendo localmente en el puerto `5432` y ejecuta:
+---
+
+## 📮 Postman Collection
+
+Pre-configured Postman collections and environment files for all 9 endpoints are located in the `postman/` directory:
+
+1. Import the collection (`Franchise-API.postman_collection.json`) into Postman.
+2. Import the desired environment (`Local.postman_environment.json` or `Staging.postman_environment.json`).
+3. Select the active environment in Postman to automatically resolve the `{{baseUrl}}` variable.
+
+---
+
+## 💻 Local Setup & Execution
+
+### Prerequisites
+- **JDK 17**
+- **Docker & Docker Compose**
+
+### Option 1: Docker Compose (Recommended)
+Spins up a local PostgreSQL 16 container and builds/runs the reactive application:
+
+```bash
+docker-compose up -d --build
+```
+
+### Option 2: Local Gradle Execution
+Ensure PostgreSQL is running locally on port `5432` with database `franchisedb`, then execute:
+
 ```bash
 ./gradlew bootRun
 ```
 
 ---
 
-## 🏗️ Despliegue en AWS con Terraform
+## 🏗️ AWS Cloud Deployment (Terraform)
 
-La infraestructura está modularizada en `deployment/terraform/` (ver detalles en [`TERRAFORM_GUIDE.md`](./deployment/terraform/TERRAFORM_GUIDE.md)):
+The cloud infrastructure is located in `deployment/terraform/`:
+
+```text
+deployment/terraform/
+├── modules/
+│   ├── vpc/             # Custom VPC, Public/Private Subnets, NAT Gateway, Route Tables
+│   ├── rds/             # Multi-AZ PostgreSQL 16 RDS instance in isolated subnets
+│   ├── alb/             # Application Load Balancer, Target Groups, Health Checks
+│   ├── ecs/             # ECS Cluster, Task Definition, Fargate Service, Autoscaling
+│   └── security_groups/ # Least-privilege network security groups
+└── environments/
+    └── staging/         # Staging environment definition and S3 remote state configuration
+```
+
+### Deploying to Staging
 
 ```bash
 cd deployment/terraform/environments/staging
 
-# 1. Configurar variables locales
+# 1. Configure input variables
 cp terraform.tfvars.example terraform.tfvars
+# Update terraform.tfvars with your AWS configuration
 
-# 2. Inicializar y aplicar con State Locking en S3
+# 2. Initialize remote backend (S3 with state locking)
 terraform init
-terraform plan
-terraform apply
+
+# 3. Plan and apply infrastructure
+terraform plan -out=tfplan
+terraform apply tfplan
 ```
 
 ---
 
-## 🧪 Pruebas y Cobertura
+## 🧪 Testing & Quality Assurance
 
-* **Ejecutar Pruebas (StepVerifier + ArchUnit + Unit/Integration)**:
+- **Reactive Unit & Integration Tests**: All reactive streams are validated using `StepVerifier` without any blocking operations.
+- **Architecture Validation**: Architecture rules are enforced via ArchUnit in `app-service`.
+- **Run All Tests**:
   ```bash
   ./gradlew test
   ```
-* **Reporte de Cobertura JaCoCo**:
+- **Generate JaCoCo Code Coverage Report**:
   ```bash
   ./gradlew jacocoMergedReport
-  # Reporte generado en: build/reports/jacocoMergedReport/html/index.html
+  # HTML Report generated at: build/reports/jacocoMergedReport/html/index.html
   ```

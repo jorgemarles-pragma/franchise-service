@@ -48,7 +48,7 @@ class DeleteProductFromBranchUseCaseTest {
 
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTH)
                 .build();
 
         ProductModel existingProduct = ProductModel.builder()
@@ -96,7 +96,7 @@ class DeleteProductFromBranchUseCaseTest {
 
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTH)
                 .build();
 
         when(branchModelRepository.findById(branchId)).thenReturn(Mono.just(existingBranch));
@@ -121,7 +121,7 @@ class DeleteProductFromBranchUseCaseTest {
 
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTH)
                 .build();
 
         ProductModel productInOtherBranch = ProductModel.builder()
@@ -152,7 +152,7 @@ class DeleteProductFromBranchUseCaseTest {
 
         BranchModel existingBranch = BranchModel.builder()
                 .id(branchId)
-                .name(UseCaseTestConstants.BRANCH_NAME_NORTE)
+                .name(UseCaseTestConstants.BRANCH_NAME_NORTH)
                 .build();
 
         ProductModel existingProduct = ProductModel.builder()
