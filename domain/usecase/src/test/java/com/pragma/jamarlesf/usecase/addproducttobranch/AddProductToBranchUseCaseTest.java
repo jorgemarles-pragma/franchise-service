@@ -128,7 +128,7 @@ class AddProductToBranchUseCaseTest {
                 .build();
 
         StepVerifier.create(useCase.execute(branchId, inputProduct))
-                .expectErrorMatches(throwable -> throwable instanceof InvalidProductStockException)
+                .expectError(InvalidProductStockException.class)
                 .verify();
 
         verify(branchModelRepository, never()).findById(any(BranchModelId.class));

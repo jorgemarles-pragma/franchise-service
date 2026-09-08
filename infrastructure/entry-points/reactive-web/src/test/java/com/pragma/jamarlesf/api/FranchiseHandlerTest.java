@@ -23,7 +23,6 @@ import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -82,7 +81,7 @@ class FranchiseHandlerTest {
 
         when(serverRequest.pathVariable(PATH_VAR_FRANCHISE_ID)).thenReturn(ApiTestConstants.ID_ONE);
         when(serverRequest.bodyToMono(UpdateFranchiseNameRequest.class)).thenReturn(Mono.just(requestDto));
-        when(updateFranchiseNameUseCase.execute(eq(new FranchiseModelId(ApiTestConstants.ID_ONE)), eq(ApiTestConstants.FRANCHISE_NAME_UPDATED)))
+        when(updateFranchiseNameUseCase.execute(new FranchiseModelId(ApiTestConstants.ID_ONE), ApiTestConstants.FRANCHISE_NAME_UPDATED))
                 .thenReturn(Mono.just(updatedFranchise));
 
         Mono<ServerResponse> responseMono = franchiseHandler.updateFranchiseName(serverRequest);
@@ -96,6 +95,6 @@ class FranchiseHandlerTest {
 
         verify(serverRequest).pathVariable(PATH_VAR_FRANCHISE_ID);
         verify(serverRequest).bodyToMono(UpdateFranchiseNameRequest.class);
-        verify(updateFranchiseNameUseCase).execute(eq(new FranchiseModelId(ApiTestConstants.ID_ONE)), eq(ApiTestConstants.FRANCHISE_NAME_UPDATED));
+        verify(updateFranchiseNameUseCase).execute(new FranchiseModelId(ApiTestConstants.ID_ONE), ApiTestConstants.FRANCHISE_NAME_UPDATED);
     }
 }

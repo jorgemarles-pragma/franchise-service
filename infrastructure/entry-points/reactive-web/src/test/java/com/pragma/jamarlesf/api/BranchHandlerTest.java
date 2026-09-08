@@ -89,7 +89,7 @@ class BranchHandlerTest {
 
         when(serverRequest.pathVariable(PATH_VAR_BRANCH_ID)).thenReturn(ApiTestConstants.ID_TEN);
         when(serverRequest.bodyToMono(UpdateBranchNameRequest.class)).thenReturn(Mono.just(requestDto));
-        when(updateBranchNameUseCase.execute(eq(new BranchModelId(ApiTestConstants.ID_TEN)), eq(ApiTestConstants.BRANCH_NAME_UPDATED)))
+        when(updateBranchNameUseCase.execute(new BranchModelId(ApiTestConstants.ID_TEN), ApiTestConstants.BRANCH_NAME_UPDATED))
                 .thenReturn(Mono.just(updatedBranch));
 
         Mono<ServerResponse> responseMono = branchHandler.updateBranchName(serverRequest);
@@ -103,6 +103,6 @@ class BranchHandlerTest {
 
         verify(serverRequest).pathVariable(PATH_VAR_BRANCH_ID);
         verify(serverRequest).bodyToMono(UpdateBranchNameRequest.class);
-        verify(updateBranchNameUseCase).execute(eq(new BranchModelId(ApiTestConstants.ID_TEN)), eq(ApiTestConstants.BRANCH_NAME_UPDATED));
+        verify(updateBranchNameUseCase).execute(new BranchModelId(ApiTestConstants.ID_TEN), ApiTestConstants.BRANCH_NAME_UPDATED);
     }
 }
