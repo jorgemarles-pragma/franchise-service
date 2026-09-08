@@ -11,6 +11,7 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -174,5 +175,80 @@ class BranchRepositoryAdapterTest {
                 .verifyComplete();
 
         verify(repository).save(any(BranchData.class));
+    }
+
+    @Test
+    void mustFindAllBranchesByFranchiseIdSuccessfully() {
+        BranchData branch1 = BranchData.builder()
+                .id(ID_TEN_LONG)
+                .name(BRANCH_NAME_DEFAULT)
+                .franchiseId(ID_ONE_LONG)
+                .build();
+
+        BranchData branch2 = BranchData.builder()
+                .id(ID_NINE_NINE_NINE_LONG)
+                .name(BRANCH_NAME_UPDATED)
+                .franchiseId(ID_ONE_LONG)
+                .build();
+
+        when(repository.findAllByFranchiseId(ID_ONE_LONG)).thenReturn(Flux.just(branch1, branch2));
+
+        StepVerifier.create(adapter.findAllByFranchiseId(new FranchiseModelId(ID_ONE)))
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals(ID_TEN, result.getId().value());
+                    assertEquals(BRANCH_NAME_DEFAULT, result.getName());
+                    assertEquals(ID_ONE, result.getFranchiseId().value());
+                })
+                .assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals(ID_NINE_NINE_NINE, result.getId().value());
+                    assertEquals(BRANCH_NAME_UPDATED, result.getName());
+                    assertEquals(ID_ONE, result.getFranchiseId().value());
+                })
+                .verifyComplete();
+
+        verify(repository).findAllByFranchiseId(ID_ONE_LONG);
+    }
+
+    @Test
+    void mustReturnEmptyWhenNoBranchesForFranchise() {
+        when(repository.findAllByFranchiseId(ID_ONE_LONG)).thenReturn(Flux.empty());
+
+        StepVerifier.create(adapter.findAllByFranchiseId(new FranchiseModelId(ID_ONE)))
+                .verifyComplete();
+
+        verify(repository).findAllByFranchiseId(ID_ONE_LONG);
+    }
+
+    @Test
+    void mustReturnEmptyWhenFranchiseIdIsNull() {
+        StepVerifier.create(adapter.findAllByFranchiseId((FranchiseModelId) null))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenFranchiseIdIsBlank() {
+        StepVerifier.create(adapter.findAllByFranchiseId(new FranchiseModelId(WHITESPACE_STRING)))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustReturnEmptyWhenFranchiseIdIsNonNumeric() {
+        StepVerifier.create(adapter.findAllByFranchiseId(new FranchiseModelId(ID_NON_NUMERIC)))
+                .verifyComplete();
+    }
+
+    @Test
+    void mustPropagateErrorWhenFindAllByFranchiseIdFails() {
+        RuntimeException dbException = new RuntimeException(ERROR_DB_TIMEOUT);
+        when(repository.findAllByFranchiseId(ID_ONE_LONG)).thenReturn(Flux.error(dbException));
+
+        StepVerifier.create(adapter.findAllByFranchiseId(new FranchiseModelId(ID_ONE)))
+                .expectErrorMatches(error -> error instanceof RuntimeException
+                        && error.getMessage().equals(ERROR_DB_TIMEOUT))
+                .verify();
+
+        verify(repository).findAllByFranchiseId(ID_ONE_LONG);
     }
 }

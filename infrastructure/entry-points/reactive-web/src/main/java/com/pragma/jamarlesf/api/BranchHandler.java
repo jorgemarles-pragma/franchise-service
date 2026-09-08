@@ -7,12 +7,16 @@ import com.pragma.jamarlesf.model.branchmodel.BranchModel;
 import com.pragma.jamarlesf.model.branchmodel.BranchModelId;
 import com.pragma.jamarlesf.model.franchisemodel.FranchiseModelId;
 import com.pragma.jamarlesf.usecase.addbranchtofranchise.AddBranchToFranchiseUseCase;
+import com.pragma.jamarlesf.usecase.getbranchbyid.GetBranchByIdUseCase;
+import com.pragma.jamarlesf.usecase.getbranchesbyfranchise.GetBranchesByFranchiseUseCase;
 import com.pragma.jamarlesf.usecase.updatebranchname.UpdateBranchNameUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_BRANCH_ID;
@@ -24,6 +28,8 @@ public class BranchHandler {
 
     private final AddBranchToFranchiseUseCase addBranchToFranchiseUseCase;
     private final UpdateBranchNameUseCase updateBranchNameUseCase;
+    private final GetBranchByIdUseCase getBranchByIdUseCase;
+    private final GetBranchesByFranchiseUseCase getBranchesByFranchiseUseCase;
 
     public Mono<ServerResponse> addBranch(ServerRequest request) {
         String franchiseId = request.pathVariable(PATH_VAR_FRANCHISE_ID);
@@ -54,5 +60,33 @@ public class BranchHandler {
                 .flatMap(response -> ServerResponse
                         .ok()
                         .bodyValue(response));
+    }
+
+    public Mono<ServerResponse> getBranchById(ServerRequest request) {
+        String branchId = request.pathVariable(PATH_VAR_BRANCH_ID);
+        return getBranchByIdUseCase.execute(new BranchModelId(branchId))
+                .map(branch -> BranchResponse.builder()
+                        .id(branch.getId() != null ? branch.getId().value() : null)
+                        .name(branch.getName())
+                        .franchiseId(branch.getFranchiseId() != null ? branch.getFranchiseId().value() : null)
+                        .build())
+                .flatMap(response -> ServerResponse
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(response));
+    }
+
+    public Mono<ServerResponse> getBranchesByFranchise(ServerRequest request) {
+        String franchiseId = request.pathVariable(PATH_VAR_FRANCHISE_ID);
+        Flux<BranchResponse> flux = getBranchesByFranchiseUseCase.execute(new FranchiseModelId(franchiseId))
+                .map(branch -> BranchResponse.builder()
+                        .id(branch.getId() != null ? branch.getId().value() : null)
+                        .name(branch.getName())
+                        .franchiseId(branch.getFranchiseId() != null ? branch.getFranchiseId().value() : null)
+                        .build());
+        return ServerResponse
+                .ok()
+                .contentType(MediaType.APPLICATION_NDJSON)
+                .body(flux, BranchResponse.class);
     }
 }
