@@ -10,6 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
@@ -96,41 +99,13 @@ class CreateFranchiseUseCaseTest {
         verify(franchiseModelRepository, never()).create(any(FranchiseModel.class));
     }
 
-    @Test
-    @DisplayName("Should emit InvalidFranchiseNameException when name is null")
-    void shouldEmitInvalidFranchiseNameExceptionWhenNameIsNull() {
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {UseCaseTestConstants.WHITESPACE_STRING, "\t\n"})
+    @DisplayName("Should emit InvalidFranchiseNameException when name is null, empty, or blank")
+    void shouldEmitInvalidFranchiseNameExceptionWhenNameIsInvalid(String invalidName) {
         FranchiseModel inputFranchise = FranchiseModel.builder()
-                .name(null)
-                .build();
-
-        StepVerifier.create(useCase.execute(inputFranchise))
-                .expectErrorMatches(throwable -> throwable instanceof InvalidFranchiseNameException
-                        && throwable.getMessage().contains(ErrorMessageConstants.FRANCHISE_NAME_CANNOT_BE_EMPTY_OR_NULL))
-                .verify();
-
-        verify(franchiseModelRepository, never()).create(any(FranchiseModel.class));
-    }
-
-    @Test
-    @DisplayName("Should emit InvalidFranchiseNameException when name is empty")
-    void shouldEmitInvalidFranchiseNameExceptionWhenNameIsEmpty() {
-        FranchiseModel inputFranchise = FranchiseModel.builder()
-                .name(UseCaseTestConstants.EMPTY_STRING)
-                .build();
-
-        StepVerifier.create(useCase.execute(inputFranchise))
-                .expectErrorMatches(throwable -> throwable instanceof InvalidFranchiseNameException
-                        && throwable.getMessage().contains(ErrorMessageConstants.FRANCHISE_NAME_CANNOT_BE_EMPTY_OR_NULL))
-                .verify();
-
-        verify(franchiseModelRepository, never()).create(any(FranchiseModel.class));
-    }
-
-    @Test
-    @DisplayName("Should emit InvalidFranchiseNameException when name is whitespace only")
-    void shouldEmitInvalidFranchiseNameExceptionWhenNameIsWhitespaceOnly() {
-        FranchiseModel inputFranchise = FranchiseModel.builder()
-                .name(UseCaseTestConstants.WHITESPACE_STRING)
+                .name(invalidName)
                 .build();
 
         StepVerifier.create(useCase.execute(inputFranchise))

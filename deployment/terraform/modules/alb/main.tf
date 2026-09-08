@@ -7,6 +7,12 @@ resource "aws_lb" "main" {
 
   enable_deletion_protection = false
 
+  access_logs {
+    bucket  = var.access_logs_bucket
+    prefix  = "${var.project_name}-${var.environment}-alb"
+    enabled = var.enable_access_logs
+  }
+
   tags = {
     Name        = "${var.project_name}-${var.environment}-alb"
     Environment = var.environment
@@ -38,6 +44,10 @@ resource "aws_lb_target_group" "app" {
   }
 }
 
+# SonarQube terraform:S5332 (Security Hotspot Review):
+# Clear-text HTTP (port 80) is intentionally permitted for this staging sandbox environment
+# where a custom domain and AWS Certificate Manager (ACM) TLS/SSL certificate are not provisioned.
+# For production environments, configure HTTPS on port 443 with an ACM certificate and HTTP->HTTPS redirect.
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80

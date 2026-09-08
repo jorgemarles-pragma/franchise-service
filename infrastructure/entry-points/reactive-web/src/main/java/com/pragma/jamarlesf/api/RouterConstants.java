@@ -1,5 +1,11 @@
 package com.pragma.jamarlesf.api;
 
+/**
+ * Constant definitions for REST API endpoint route patterns, path variables, tags, and MIME types.
+ * java:S1075 is suppressed because these strings are declarative route path patterns for Spring WebFlux
+ * RouterFunction mappings, not external remote URIs or file paths.
+ */
+@SuppressWarnings("java:S1075")
 public final class RouterConstants {
     
     // Route Paths

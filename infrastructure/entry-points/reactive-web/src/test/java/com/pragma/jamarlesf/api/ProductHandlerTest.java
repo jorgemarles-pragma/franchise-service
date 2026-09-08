@@ -108,7 +108,7 @@ class ProductHandlerTest {
 
         when(serverRequest.pathVariable(PATH_VAR_PRODUCT_ID)).thenReturn(ApiTestConstants.ID_ONE_HUNDRED);
         when(serverRequest.bodyToMono(UpdateProductStockRequest.class)).thenReturn(Mono.just(requestDto));
-        when(modifyProductStockUseCase.execute(eq(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED)), eq(ApiTestConstants.STOCK_SEVENTY_FIVE)))
+        when(modifyProductStockUseCase.execute(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED), ApiTestConstants.STOCK_SEVENTY_FIVE))
                 .thenReturn(Mono.just(updatedProduct));
 
         Mono<ServerResponse> responseMono = productHandler.updateStock(serverRequest);
@@ -122,7 +122,7 @@ class ProductHandlerTest {
 
         verify(serverRequest).pathVariable(PATH_VAR_PRODUCT_ID);
         verify(serverRequest).bodyToMono(UpdateProductStockRequest.class);
-        verify(modifyProductStockUseCase).execute(eq(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED)), eq(ApiTestConstants.STOCK_SEVENTY_FIVE));
+        verify(modifyProductStockUseCase).execute(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED), ApiTestConstants.STOCK_SEVENTY_FIVE);
     }
 
     @Test
@@ -143,7 +143,7 @@ class ProductHandlerTest {
                 .build();
 
         when(serverRequest.pathVariable(PATH_VAR_FRANCHISE_ID)).thenReturn(ApiTestConstants.ID_ONE);
-        when(getHighestStockProductsByFranchiseUseCase.execute(eq(new FranchiseModelId(ApiTestConstants.ID_ONE))))
+        when(getHighestStockProductsByFranchiseUseCase.execute(new FranchiseModelId(ApiTestConstants.ID_ONE)))
                 .thenReturn(Flux.just(product1, product2));
 
         Mono<ServerResponse> responseMono = productHandler.getHighestStockProducts(serverRequest);
@@ -156,14 +156,14 @@ class ProductHandlerTest {
                 .verifyComplete();
 
         verify(serverRequest).pathVariable(PATH_VAR_FRANCHISE_ID);
-        verify(getHighestStockProductsByFranchiseUseCase).execute(eq(new FranchiseModelId(ApiTestConstants.ID_ONE)));
+        verify(getHighestStockProductsByFranchiseUseCase).execute(new FranchiseModelId(ApiTestConstants.ID_ONE));
     }
 
     @Test
     @DisplayName("Should return HTTP 200 and empty list when no products found for franchise")
     void shouldReturn200AndEmptyListWhenNoProductsFoundForFranchise() {
         when(serverRequest.pathVariable(PATH_VAR_FRANCHISE_ID)).thenReturn(ApiTestConstants.ID_ONE);
-        when(getHighestStockProductsByFranchiseUseCase.execute(eq(new FranchiseModelId(ApiTestConstants.ID_ONE))))
+        when(getHighestStockProductsByFranchiseUseCase.execute(new FranchiseModelId(ApiTestConstants.ID_ONE)))
                 .thenReturn(Flux.empty());
 
         Mono<ServerResponse> responseMono = productHandler.getHighestStockProducts(serverRequest);
@@ -176,14 +176,14 @@ class ProductHandlerTest {
                 .verifyComplete();
 
         verify(serverRequest).pathVariable(PATH_VAR_FRANCHISE_ID);
-        verify(getHighestStockProductsByFranchiseUseCase).execute(eq(new FranchiseModelId(ApiTestConstants.ID_ONE)));
+        verify(getHighestStockProductsByFranchiseUseCase).execute(new FranchiseModelId(ApiTestConstants.ID_ONE));
     }
 
     @Test
     @DisplayName("Should propagate error when use case throws exception")
     void shouldPropagateErrorWhenUseCaseThrowsException() {
         when(serverRequest.pathVariable(PATH_VAR_FRANCHISE_ID)).thenReturn(ApiTestConstants.ID_NON_EXISTENT);
-        when(getHighestStockProductsByFranchiseUseCase.execute(eq(new FranchiseModelId(ApiTestConstants.ID_NON_EXISTENT))))
+        when(getHighestStockProductsByFranchiseUseCase.execute(new FranchiseModelId(ApiTestConstants.ID_NON_EXISTENT)))
                 .thenReturn(Flux.error(new FranchiseNotFoundException(ApiTestConstants.ID_NON_EXISTENT)));
 
         Mono<ServerResponse> responseMono = productHandler.getHighestStockProducts(serverRequest);
@@ -193,7 +193,7 @@ class ProductHandlerTest {
                 .verify();
 
         verify(serverRequest).pathVariable(PATH_VAR_FRANCHISE_ID);
-        verify(getHighestStockProductsByFranchiseUseCase).execute(eq(new FranchiseModelId(ApiTestConstants.ID_NON_EXISTENT)));
+        verify(getHighestStockProductsByFranchiseUseCase).execute(new FranchiseModelId(ApiTestConstants.ID_NON_EXISTENT));
     }
 
     @Test
@@ -209,7 +209,7 @@ class ProductHandlerTest {
 
         when(serverRequest.pathVariable(PATH_VAR_PRODUCT_ID)).thenReturn(ApiTestConstants.ID_ONE_HUNDRED);
         when(serverRequest.bodyToMono(UpdateProductNameRequest.class)).thenReturn(Mono.just(requestDto));
-        when(updateProductNameUseCase.execute(eq(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED)), eq(ApiTestConstants.PRODUCT_NAME_UPDATED)))
+        when(updateProductNameUseCase.execute(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED), ApiTestConstants.PRODUCT_NAME_UPDATED))
                 .thenReturn(Mono.just(updatedProduct));
 
         Mono<ServerResponse> responseMono = productHandler.updateProductName(serverRequest);
@@ -223,7 +223,7 @@ class ProductHandlerTest {
 
         verify(serverRequest).pathVariable(PATH_VAR_PRODUCT_ID);
         verify(serverRequest).bodyToMono(UpdateProductNameRequest.class);
-        verify(updateProductNameUseCase).execute(eq(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED)), eq(ApiTestConstants.PRODUCT_NAME_UPDATED));
+        verify(updateProductNameUseCase).execute(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED), ApiTestConstants.PRODUCT_NAME_UPDATED);
     }
 
     @Test
@@ -231,7 +231,7 @@ class ProductHandlerTest {
     void shouldReturn204WhenProductIsDeletedSuccessfully() {
         when(serverRequest.pathVariable(PATH_VAR_BRANCH_ID)).thenReturn(ApiTestConstants.ID_TEN);
         when(serverRequest.pathVariable(PATH_VAR_PRODUCT_ID)).thenReturn(ApiTestConstants.ID_ONE_HUNDRED);
-        when(deleteProductFromBranchUseCase.execute(eq(new BranchModelId(ApiTestConstants.ID_TEN)), eq(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED))))
+        when(deleteProductFromBranchUseCase.execute(new BranchModelId(ApiTestConstants.ID_TEN), new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED)))
                 .thenReturn(Mono.empty());
 
         Mono<ServerResponse> responseMono = productHandler.deleteProduct(serverRequest);
@@ -245,7 +245,7 @@ class ProductHandlerTest {
 
         verify(serverRequest).pathVariable(PATH_VAR_BRANCH_ID);
         verify(serverRequest).pathVariable(PATH_VAR_PRODUCT_ID);
-        verify(deleteProductFromBranchUseCase).execute(eq(new BranchModelId(ApiTestConstants.ID_TEN)), eq(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED)));
+        verify(deleteProductFromBranchUseCase).execute(new BranchModelId(ApiTestConstants.ID_TEN), new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED));
     }
 
     @Test
@@ -253,7 +253,7 @@ class ProductHandlerTest {
     void shouldPropagateErrorWhenDeleteProductFails() {
         when(serverRequest.pathVariable(PATH_VAR_BRANCH_ID)).thenReturn(ApiTestConstants.ID_TEN);
         when(serverRequest.pathVariable(PATH_VAR_PRODUCT_ID)).thenReturn(ApiTestConstants.ID_ONE_HUNDRED);
-        when(deleteProductFromBranchUseCase.execute(eq(new BranchModelId(ApiTestConstants.ID_TEN)), eq(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED))))
+        when(deleteProductFromBranchUseCase.execute(new BranchModelId(ApiTestConstants.ID_TEN), new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED)))
                 .thenReturn(Mono.error(new RuntimeException(ApiTestConstants.SAMPLE_ERROR_MESSAGE)));
 
         Mono<ServerResponse> responseMono = productHandler.deleteProduct(serverRequest);
@@ -265,6 +265,6 @@ class ProductHandlerTest {
 
         verify(serverRequest).pathVariable(PATH_VAR_BRANCH_ID);
         verify(serverRequest).pathVariable(PATH_VAR_PRODUCT_ID);
-        verify(deleteProductFromBranchUseCase).execute(eq(new BranchModelId(ApiTestConstants.ID_TEN)), eq(new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED)));
+        verify(deleteProductFromBranchUseCase).execute(new BranchModelId(ApiTestConstants.ID_TEN), new ProductModelId(ApiTestConstants.ID_ONE_HUNDRED));
     }
 }

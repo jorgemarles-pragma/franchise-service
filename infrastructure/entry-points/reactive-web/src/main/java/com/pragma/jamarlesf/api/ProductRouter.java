@@ -21,11 +21,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import static com.pragma.jamarlesf.api.RouterConstants.APPLICATION_JSON;
 import static com.pragma.jamarlesf.api.RouterConstants.BRANCH_PRODUCT_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.FRANCHISE_HIGHEST_STOCK_PRODUCTS_PATH;
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_BRANCH_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_FRANCHISE_ID;
+import static com.pragma.jamarlesf.api.RouterConstants.PATH_VAR_PRODUCT_ID;
 import static com.pragma.jamarlesf.api.RouterConstants.PRODUCTS_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.PRODUCT_NAME_PATH;
 import static com.pragma.jamarlesf.api.RouterConstants.PRODUCT_STOCK_PATH;
+import static com.pragma.jamarlesf.api.RouterConstants.TAG_PRODUCTS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.DELETE;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.PATCH;
@@ -33,13 +38,14 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration
+@SuppressWarnings("java:S1075")
 public class ProductRouter {
 
     @Bean
     @RouterOperations({
             @RouterOperation(
-                    path = "/api/branches/{branchId}/products",
-                    produces = {"application/json"},
+                    path = PRODUCTS_PATH,
+                    produces = {APPLICATION_JSON},
                     method = RequestMethod.POST,
                     beanClass = ProductHandler.class,
                     beanMethod = "addProduct",
@@ -47,9 +53,9 @@ public class ProductRouter {
                             operationId = "addProductToBranch",
                             summary = "Add a product to a branch",
                             description = "Creates and associates a new product with an existing branch",
-                            tags = {"Products"},
+                            tags = {TAG_PRODUCTS},
                             parameters = {
-                                    @Parameter(in = ParameterIn.PATH, name = "branchId", description = "Branch identifier", required = true)
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_BRANCH_ID, description = "Branch identifier", required = true)
                             },
                             requestBody = @RequestBody(
                                     description = "Product data to create",
@@ -67,7 +73,7 @@ public class ProductRouter {
                     )
             ),
             @RouterOperation(
-                    path = "/api/branches/{branchId}/products/{productId}",
+                    path = BRANCH_PRODUCT_PATH,
                     method = RequestMethod.DELETE,
                     beanClass = ProductHandler.class,
                     beanMethod = "deleteProduct",
@@ -75,10 +81,10 @@ public class ProductRouter {
                             operationId = "deleteProductFromBranch",
                             summary = "Delete a product from a branch",
                             description = "Removes a product belonging to the specified branch",
-                            tags = {"Products"},
+                            tags = {TAG_PRODUCTS},
                             parameters = {
-                                    @Parameter(in = ParameterIn.PATH, name = "branchId", description = "Branch identifier", required = true),
-                                    @Parameter(in = ParameterIn.PATH, name = "productId", description = "Product identifier", required = true)
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_BRANCH_ID, description = "Branch identifier", required = true),
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_PRODUCT_ID, description = "Product identifier", required = true)
                             },
                             responses = {
                                     @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
@@ -88,8 +94,8 @@ public class ProductRouter {
                     )
             ),
             @RouterOperation(
-                    path = "/api/products/{productId}/stock",
-                    produces = {"application/json"},
+                    path = PRODUCT_STOCK_PATH,
+                    produces = {APPLICATION_JSON},
                     method = RequestMethod.PATCH,
                     beanClass = ProductHandler.class,
                     beanMethod = "updateStock",
@@ -97,9 +103,9 @@ public class ProductRouter {
                             operationId = "modifyProductStock",
                             summary = "Modify product stock",
                             description = "Updates the stock count of an existing product",
-                            tags = {"Products"},
+                            tags = {TAG_PRODUCTS},
                             parameters = {
-                                    @Parameter(in = ParameterIn.PATH, name = "productId", description = "Product identifier", required = true)
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_PRODUCT_ID, description = "Product identifier", required = true)
                             },
                             requestBody = @RequestBody(
                                     description = "New stock payload",
@@ -117,8 +123,8 @@ public class ProductRouter {
                     )
             ),
             @RouterOperation(
-                    path = "/api/products/{productId}/name",
-                    produces = {"application/json"},
+                    path = PRODUCT_NAME_PATH,
+                    produces = {APPLICATION_JSON},
                     method = RequestMethod.PATCH,
                     beanClass = ProductHandler.class,
                     beanMethod = "updateProductName",
@@ -126,9 +132,9 @@ public class ProductRouter {
                             operationId = "updateProductName",
                             summary = "Update product name",
                             description = "Updates the name of an existing product",
-                            tags = {"Products"},
+                            tags = {TAG_PRODUCTS},
                             parameters = {
-                                    @Parameter(in = ParameterIn.PATH, name = "productId", description = "Product identifier", required = true)
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_PRODUCT_ID, description = "Product identifier", required = true)
                             },
                             requestBody = @RequestBody(
                                     description = "New product name payload",
@@ -146,8 +152,8 @@ public class ProductRouter {
                     )
             ),
             @RouterOperation(
-                    path = "/api/franchises/{franchiseId}/max-stock-products",
-                    produces = {"application/json"},
+                    path = FRANCHISE_HIGHEST_STOCK_PRODUCTS_PATH,
+                    produces = {APPLICATION_JSON},
                     method = RequestMethod.GET,
                     beanClass = ProductHandler.class,
                     beanMethod = "getHighestStockProducts",
@@ -155,9 +161,9 @@ public class ProductRouter {
                             operationId = "getHighestStockProductsByFranchise",
                             summary = "Get product with highest stock per branch for a franchise",
                             description = "Returns the product with the maximum stock for each branch belonging to the given franchise",
-                            tags = {"Products"},
+                            tags = {TAG_PRODUCTS},
                             parameters = {
-                                    @Parameter(in = ParameterIn.PATH, name = "franchiseId", description = "Franchise identifier", required = true)
+                                    @Parameter(in = ParameterIn.PATH, name = PATH_VAR_FRANCHISE_ID, description = "Franchise identifier", required = true)
                             },
                             responses = {
                                     @ApiResponse(responseCode = "200", description = "List of products with highest stock per branch",
