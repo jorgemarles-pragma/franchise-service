@@ -12,6 +12,5 @@ public final class ErrorTypeConstants {
     public static final String UNEXPECTED_ERROR = "Unexpected error occurred";
 
     private ErrorTypeConstants() {
-        // Private constructor to prevent instantiation
     }
 }

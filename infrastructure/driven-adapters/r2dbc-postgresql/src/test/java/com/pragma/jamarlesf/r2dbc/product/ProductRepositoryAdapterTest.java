@@ -375,4 +375,3 @@ class ProductRepositoryAdapterTest {
         verify(repository).deleteById(ID_ONE_HUNDRED_LONG);
     }
 }
-

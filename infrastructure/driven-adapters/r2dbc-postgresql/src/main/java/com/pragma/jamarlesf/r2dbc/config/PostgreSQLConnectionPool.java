@@ -20,7 +20,7 @@ import java.time.Duration;
 @EnableR2dbcRepositories(basePackages = "com.pragma.jamarlesf.r2dbc")
 @EnableConfigurationProperties(PostgresqlConnectionProperties.class)
 public class PostgreSQLConnectionPool {
-    /* Change these values for your project */
+
     public static final int INITIAL_SIZE = 12;
     public static final int MAX_SIZE = 15;
     public static final int MAX_IDLE_TIME = 30;

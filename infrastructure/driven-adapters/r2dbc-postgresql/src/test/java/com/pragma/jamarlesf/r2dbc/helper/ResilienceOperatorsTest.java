@@ -121,19 +121,16 @@ class ResilienceOperatorsTest {
     void shouldOpenCircuitBreakerOnFailures() {
         Mono<String> failingMono = Mono.error(new RuntimeException(ERROR_FATAL_DB));
 
-        // Call 1 fails
         StepVerifier.create(operators.apply(failingMono))
                 .expectError(RuntimeException.class)
                 .verify();
 
-        // Call 2 fails -> minimum calls (2) reached, 100% failure rate -> CB opens!
         StepVerifier.create(operators.apply(failingMono))
                 .expectError(RuntimeException.class)
                 .verify();
 
         assertEquals(CircuitBreaker.State.OPEN, circuitBreaker.getState());
 
-        // Call 3 should fail-fast with CallNotPermittedException
         StepVerifier.create(operators.apply(Mono.just(TEST_WONT_EXECUTE)))
                 .expectErrorMatches(throwable -> throwable instanceof CallNotPermittedException)
                 .verify();
