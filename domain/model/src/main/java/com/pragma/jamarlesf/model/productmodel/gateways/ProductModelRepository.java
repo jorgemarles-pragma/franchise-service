@@ -15,4 +15,3 @@ public interface ProductModelRepository {
     Flux<ProductModel> findHighestStockByFranchiseId(FranchiseModelId franchiseId);
     Mono<Void> deleteById(ProductModelId id);
 }
-

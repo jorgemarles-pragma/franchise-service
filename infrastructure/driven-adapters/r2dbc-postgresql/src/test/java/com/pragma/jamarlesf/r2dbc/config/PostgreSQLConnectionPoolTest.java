@@ -25,7 +25,6 @@ class PostgreSQLConnectionPoolTest {
     @Mock
     private PostgresqlConnectionProperties properties;
 
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
